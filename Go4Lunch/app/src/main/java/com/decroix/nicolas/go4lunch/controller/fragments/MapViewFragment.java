@@ -20,8 +20,9 @@ import android.view.ViewGroup;
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
-import com.decroix.nicolas.go4lunch.base.BaseFragment;
+import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
+import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,6 +46,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -58,8 +60,8 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapViewFragment extends BaseFragment
-        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapViewFragment extends ToolbarAutocomplete
+        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener {
 
     public interface MapViewFragmentInterface {
         void onClickRestaurantMarker(Place restaurant, @Nullable Bitmap bitmap);
@@ -293,6 +295,26 @@ public class MapViewFragment extends BaseFragment
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onClickAutocompleteResult(Restaurant restaurant) {
+        this.showToolbar(true);
+        FetchPlaceRequest request = FetchPlaceRequest.newInstance(restaurant.getPlaceID(), PLACES_FIELDS);
+        placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+            Place place = response.getPlace();
+            updateCameraPosition(place);
+        }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
+    }
+
+    /**
+     * Update the camera position on the restaurant passed in parameter and show a marker.
+     * @param place restaurant
+     */
+    private void updateCameraPosition(@NonNull Place place) {
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM);
+        mMap.animateCamera(cameraUpdate);
+        addMarkerColor(Collections.singletonList(place));
     }
 
 }
