@@ -4,7 +4,6 @@
     <color name="colorPrimaryDark">#ff4a35</color>
     <color name="colorAccent">#cd3200</color>
 
-    <color name="colorTextWhite">#FFFFFF</color>
     <color name="colorTextBlack">#000000</color>
     <color name="bottom_nav_color_unused">#000000</color>
 </resources>

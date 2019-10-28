@@ -10,11 +10,9 @@
     <!-- OBJECT REQUIRE NON NULL -->
     <string name="rnn_user_must_not_be_null">User must not be null.</string>
     <string name="rnn_action_bar_must_not_be_null">Action must not be null.</string>
-    <string name="rnn_context_cannot_be_null">The context cannot be null.</string>
 
     <!-- ERROR -->
     <string name="error_auth_failed">Authentication Failed.</string>
-    <string name="error_unknown_error">Error unknown</string>
 
     <!-- ADD ON FAILURE LISTENER -->
     <string name="afl_get_user">Error when creating a user</string>
@@ -54,11 +52,20 @@
     <string name="toolbar_title_hungry">I\'m Hungry!</string>
     <string name="toolbar_title_workmates">Available workmates</string>
     <string name="toolbar_title_chat">Chat</string>
-    <string name="toolbar_title_settings">Settings</string>
 
     <!-- MAP VIEW FRAGMENT -->
     <string name="afl_get_location">Error when locating the device</string>
     <string name="afl_fetch_place">Error when recovering surrounding places</string>
     <string name="afl_get_restaurant">Error when recovering the restaurant</string>
+    <string name="afl_fetch_photo">Unable to download the image</string>
+
+    <!-- LIST VIEW FRAGMENT -->
+    <string name="no_restaurants_found">No restaurants found</string>
+    <string name="dummy_txt_le_zinc" translatable="false">Le Zinc</string>
+    <string name="dummy_txt_120m" translatable="false">120m</string>
+    <string name="dummy_txt_french_12_rue_du_faubourg_poissoni_re" translatable="false">French - 12 rue du faubourg Poissonière</string>
+    <string name="dummy_txt_2" translatable="false">(2)</string>
+    <string name="dummy_txt_open_until_7pm" translatable="false">open until 7pm</string>
+    <string name="icd_restaurant_picture" translatable="false">restaurant picture</string>
 
 </resources>

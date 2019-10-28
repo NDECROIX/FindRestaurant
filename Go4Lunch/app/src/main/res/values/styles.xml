@@ -1,6 +1,6 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -8,10 +8,16 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <!-- Toolbar theme. -->
+    <!-- Toolbar theme -->
     <style name="ToolBarStyle" parent="AppTheme">
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="colorControlNormal">@android:color/white</item>
         <item name="editTextColor">@android:color/white</item>
+    </style>
+
+    <!-- Rating bar style -->
+    <style name="RatingBar" parent="Widget.AppCompat.RatingBar.Small">
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="colorControlActivated">#FFea00</item>
     </style>
 </resources>
