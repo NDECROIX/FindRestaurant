@@ -59,6 +59,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-gcm:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
 
+    //EASY PERMISSION
+    implementation 'pub.devrel:easypermissions:3.0.0'
+
     // FACEBOOK API
     //The online interface asks me to choose between 4.0 and 4.0, so i lock this dependency on 4.0
     //Other versions work but show an error
