@@ -20,4 +20,10 @@
         <item name="colorControlNormal">@android:color/white</item>
         <item name="colorControlActivated">#FFea00</item>
     </style>
+
+    <!-- AppBar style -->
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+
+    <!-- Toolbar style -->
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 </resources>
