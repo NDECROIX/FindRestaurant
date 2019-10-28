@@ -15,12 +15,22 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
+import com.decroix.nicolas.go4lunch.controller.fragments.ChatFragment;
+import com.decroix.nicolas.go4lunch.controller.fragments.ListViewFragment;
+import com.decroix.nicolas.go4lunch.controller.fragments.MapViewFragment;
+import com.decroix.nicolas.go4lunch.controller.fragments.WorkmatesFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,6 +53,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     ConstraintLayout mSearchView;
 
     private HeaderViewHolder mHeaderViewHolder;
+
+    //------------
+    // FRAGMENTS
+    //------------
 
     /**
      * Create a intent of this activity
@@ -68,7 +82,29 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             configDrawerLayout();
             configNavigationView();
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateUI();
+    }
+
+    /**
+     * Displays the user data on the NavDrawer
+     */
+    private void updateUI() {
+        if (!isCurrentUserLogged()) {
+            startActivity(AuthActivity.newIntent(this));
+        } else {
+            Objects.requireNonNull(getCurrentUser(), getString(R.string.rnn_user_must_not_be_null));
+            Glide.with(this)
+                    .load(getCurrentUser().getPhotoUrl())
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(mHeaderViewHolder.mAvatar);
+            mHeaderViewHolder.mName.setText(getCurrentUser().getDisplayName());
+            mHeaderViewHolder.mEmail.setText(getCurrentUser().getEmail());
+        }
     }
 
     @Override
