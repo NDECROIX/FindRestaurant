@@ -88,5 +88,21 @@
     <string name="dummy_text_le_zinc" translatable="false">Le Zinc</string>
     <string name="dummy_text_french_restaurant_12_rue_du_faubourg_poissoni_re" translatable="false">French restaurant - 12 rue du faubourg Poissonière</string>
     <string name="dummy_text_scarlett_is_joining" translatable="false">Scarlett is joining</string>
+    <string name="afl_add_user_in_list">Failure when adding the user to the restaurant list</string>
+    <string name="afl_update_lunch_restaurant">Failure when updating the user\'s restaurant</string>
+    <string name="afl_remove_user_from_list">Error when deleting the user from the restaurant list.</string>
+    <string name="afl_add_restaurant_to_favorites">Error when adding a restaurant to favorites</string>
+
+    <!-- SETTINGS KEY -->
+    <string name="setting_key_notification" translatable="false">notification</string>
+    <string name="setting_key_notification_time" translatable="false">notification_time</string>
+    <string name="setting_key_delete_account" translatable="false">delete_account</string>
+
+    <!-- NOTIFICATION -->
+    <string name="notification_default_time" translatable="false">12:00</string>
+    <string name="notification_joins_you">. Joins you :</string>
+    <string name="notification_time_update">Notification time update!</string>
+    <string name="notification_channel_name" translatable="false">restaurant_notification</string>
+    <string name="notification_channel_description" translatable="false">handle notification restaurant</string>
 
 </resources>
