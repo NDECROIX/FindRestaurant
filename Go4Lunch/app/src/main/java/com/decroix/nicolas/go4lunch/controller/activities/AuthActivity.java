@@ -10,6 +10,13 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -18,11 +25,13 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import butterknife.ButterKnife;
@@ -37,6 +46,11 @@ public class AuthActivity extends BaseActivity {
 
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
+
+    /**
+     * Callback manager for the facebook api
+     */
+    private CallbackManager mCallbackManager;
 
     /**
      * Create an intent for this activity
@@ -82,7 +96,7 @@ public class AuthActivity extends BaseActivity {
     /**
      * Start main activity
      */
-    private void startMainActivity() {
+    private void startMainActivity(){
         //startActivity(MainActivity.newIntent(this));
     }
 
@@ -90,27 +104,86 @@ public class AuthActivity extends BaseActivity {
      * Handle the click on the facebook button
      */
     @OnClick(R.id.auth_activity_sign_in_facebook)
-    public void signInWithFacebook() {
-
+    public void signInWithFacebook(){
+        configFacebookSignIn();
     }
 
     /**
      * Handle the click on the google button
      */
     @OnClick(R.id.auth_activity_sign_in_google)
-    public void signInWithGoogle() {
+    public void signInWithGoogle(){
         signInGoogle();
     }
 
+    //----------------
+    // FACEBOOK
+    //----------------
 
-    private void signInGoogle() {
+    /**
+     * Configuring the facebook connection
+     */
+    private void configFacebookSignIn(){
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        mCallbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "public_profile"));
+        LoginManager.getInstance().registerCallback(mCallbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult){
+                        // App code
+                        handleFacebookAccessToken(loginResult.getAccessToken());
+                    }
+
+                    @Override
+                    public void onCancel(){
+                        // App code
+                    }
+
+                    @Override
+                    public void onError(FacebookException exception){
+                        // App code
+                    }
+                });
+    }
+
+    /**
+     * Handle the facebook access token from the last step
+     *
+     * @param token Facebook token
+     */
+    private void handleFacebookAccessToken(AccessToken token) {
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        Objects.requireNonNull(user, getString(R.string.rnn_user_must_not_be_null));
+                        if (task.getResult() != null
+                                && task.getResult().getAdditionalUserInfo() != null
+                                && task.getResult().getAdditionalUserInfo().isNewUser()) {
+                            createUserInFirestore(user);
+                        }
+                        startMainActivity();
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Snackbar.make(findViewById(R.id.auth_activity_constraint_layout),
+                                getString(R.string.error_auth_failed), Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    //----------------
+    // GOOGLE
+    //----------------
+
+    private void signInGoogle(){
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     /**
      * Handle the sign-in google task
-     *
      * @param completedTask Task of the last step
      */
     private void handleSignInGoogle(Task<GoogleSignInAccount> completedTask) {
@@ -126,7 +199,6 @@ public class AuthActivity extends BaseActivity {
 
     /**
      * Create the user in firebase if this is the first connection
-     *
      * @param acct Google sign-in account
      */
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
@@ -151,13 +223,12 @@ public class AuthActivity extends BaseActivity {
 
     /**
      * Add the user in firestore
-     *
      * @param user Current user
      */
     private void createUserInFirestore(FirebaseUser user) {
         String uid = user.getUid();
         String name = user.getDisplayName();
-        String urlPicture = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : null;
+        String urlPicture = (user.getPhotoUrl() != null)? user.getPhotoUrl().toString() : null;
         User myUser = new User(uid, name, urlPicture, "", "", new ArrayList<>());
         UserHelper.createUser(myUser)
                 .addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
@@ -165,10 +236,12 @@ public class AuthActivity extends BaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == RC_SIGN_IN) {
+        if (requestCode == RC_SIGN_IN){
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInGoogle(task);
 
+        }else if (mCallbackManager != null && resultCode == RESULT_OK){
+            mCallbackManager.onActivityResult(requestCode, resultCode, data);
         } else {
             showMessage(getString(R.string.uac_connection_cancelled));
         }
