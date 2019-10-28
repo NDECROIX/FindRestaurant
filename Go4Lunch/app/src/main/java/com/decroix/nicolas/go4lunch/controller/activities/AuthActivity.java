@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
+import com.decroix.nicolas.go4lunch.controller.MainActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -97,7 +98,7 @@ public class AuthActivity extends BaseActivity {
      * Start main activity
      */
     private void startMainActivity(){
-        //startActivity(MainActivity.newIntent(this));
+        startActivity(MainActivity.newIntent(this));
     }
 
     /**
