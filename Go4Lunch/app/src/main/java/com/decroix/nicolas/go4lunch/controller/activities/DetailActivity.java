@@ -1,5 +1,6 @@
 package com.decroix.nicolas.go4lunch.controller.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -9,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.RatingBar;
@@ -278,5 +280,36 @@ public class DetailActivity extends BaseActivity {
         } else {
             showMessage(getString(R.string.restaurant_already_added));
         }
+    }
+
+    /**
+     * Handle the click on the call button
+     */
+    @OnClick(R.id.detail_activity_btn_call)
+    public void callRestaurantBtn(){
+        if (placesClientHelper == null) {
+            placesClientHelper = new PlacesClientHelper(this);
+        }
+        if (placeRestaurant.getId() != null) {
+            placesClientHelper.getPhoneFromPlace(placeRestaurant
+                    .getPhoneNumber()).addOnSuccessListener(response -> {
+                Place place = response.getPlace();
+                if (place.getPhoneNumber() != null) {
+                    callRestaurant(place.getPhoneNumber());
+                } else {
+                    showMessage(getString(R.string.unknown_phone_number));
+                }
+            });
+        }
+    }
+
+    /**
+     * Open the call interface
+     * @param phoneNumber restaurant phone
+     */
+    private void callRestaurant(@NonNull String phoneNumber) {
+        Intent dialIntent = new Intent(Intent.ACTION_DIAL);
+        dialIntent.setData(Uri.parse("tel:" + phoneNumber));
+        startActivity(dialIntent);
     }
 }
