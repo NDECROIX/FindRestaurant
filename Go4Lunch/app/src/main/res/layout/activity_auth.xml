@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_activity_constraint_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context=".controller.activities.AuthActivity"
+    android:background="@drawable/log_picture">
+
+    <ImageView
+        android:id="@+id/auth_activity_logo_image"
+        android:layout_width="250dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/bol_logo"
+        android:contentDescription="@string/icd_logo_icon" />
+
+    <TextView
+        android:id="@+id/auth_activity_logo_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline2"
+        android:text="@string/app_name"
+        app:layout_constraintTop_toBottomOf="@+id/auth_activity_logo_image"
+        app:layout_constraintBottom_toBottomOf="@+id/auth_activity_logo_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/auth_activity_logo_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textStyle="italic|bold"
+        android:textColor="@android:color/white"
+        android:textSize="10sp"
+        android:text="@string/find_a_nice_restaurant_and_invite_your_co_workers_for_lunch"
+        app:layout_constraintTop_toBottomOf="@+id/auth_activity_logo_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="SmallSp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/auth_activity_logo_subtitle"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/auth_activity_sign_in_facebook"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            android:text="@string/btn_sign_in_with_facebook"
+            android:drawableStart="@drawable/facebook_letter_logo"
+            android:background="@drawable/button_radius_signin_facebook"/>
+
+        <Button
+            android:id="@+id/auth_activity_sign_in_google"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            android:text="@string/btn_sign_in_with_google"
+            android:drawableStart="@drawable/google_plus"
+            android:background="@drawable/button_radius_signin_google"/>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
