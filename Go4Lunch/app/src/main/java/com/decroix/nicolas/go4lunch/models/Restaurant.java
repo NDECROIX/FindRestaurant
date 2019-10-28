@@ -1,5 +1,8 @@
 package com.decroix.nicolas.go4lunch.models;
 
+import com.google.android.libraries.places.api.model.Place;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,6 +18,17 @@ public class Restaurant {
     private List<User> users;
 
     public Restaurant() {
+    }
+
+    /**
+     * Convert place to restaurant
+     * @param place place to convert
+     */
+    public Restaurant(Place place){
+        this.placeID = place.getId();
+        this.name =  place.getName();
+        this.address = place.getAddress();
+        this.users = new ArrayList<>();
     }
 
     // GETTERS
