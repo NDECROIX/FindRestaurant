@@ -69,4 +69,12 @@
     <string name="icd_restaurant_picture" translatable="false">restaurant picture</string>
     <string name="error_unknown_error">Error unknown</string>
 
+    <!-- WORKMATES FRAGMENT -->
+    <string name="icd_user_avatar" translatable="false">User avatar</string>
+    <string name="workmates_hasnt_decided_yet"> hasn\'t decided yet</string>
+
+    <!-- TOOLBAR AUTOCOMPLETE -->
+    <string name="search_view_speech_prompt" translatable="false">speech Prompt</string>
+    <string name="search_view_speech_not_supported">Speech not supported</string>
+
 </resources>
