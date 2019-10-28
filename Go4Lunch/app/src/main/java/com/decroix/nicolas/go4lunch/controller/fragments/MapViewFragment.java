@@ -18,9 +18,13 @@ import android.view.ViewGroup;
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.libraries.places.api.Places;
@@ -30,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -74,6 +79,11 @@ public class MapViewFragment extends BaseFragment
         markers = new ArrayList<>();
     }
 
+    @OnClick(R.id.fragment_map_view_fab)
+    void onMyLocationClick() {
+        getCurrentLocation();
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -97,6 +107,7 @@ public class MapViewFragment extends BaseFragment
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             mMap.setMyLocationEnabled(true);
+            getCurrentLocation();
         } else {
             //mMap.setMyLocationEnabled(false);
             getAccessFineLocationPermission();
@@ -118,4 +129,21 @@ public class MapViewFragment extends BaseFragment
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+    /**
+     * Get the last known location of the device
+     */
+    private void getCurrentLocation() {
+        LocationServices.getFusedLocationProviderClient(getFragmentContext()).getLastLocation()
+                .addOnCompleteListener(locationTask -> {
+                    if (locationTask.isSuccessful() && locationTask.getResult() != null) {
+                        mLastKnownLocation = locationTask.getResult();
+                        LatLng latLng = new LatLng(mLastKnownLocation.getLatitude(),
+                                mLastKnownLocation.getLongitude());
+                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
+                        mMap.animateCamera(cameraUpdate);
+                    }
+                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_location)));
+    }
+
 }
