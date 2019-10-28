@@ -1,6 +1,7 @@
 package com.decroix.nicolas.go4lunch.controller.fragments;
 
 
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -21,13 +22,17 @@ import android.widget.TextView;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
+import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.view.RestaurantRecyclerViewAdapter;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -58,19 +63,17 @@ public class ListViewFragment extends BaseFragment {
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 898;
 
     private PlacesClient placesClient;
-
     private RestaurantRecyclerViewAdapter adapter;
     private RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener callback;
 
-    public ListViewFragment() {
-        // Required empty public constructor
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        callback = (RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener) context;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
-        placesClient = Places.createClient(getFragmentContext());
+    public ListViewFragment() {
+        // Required empty public constructor
     }
 
     @Override
@@ -92,6 +95,29 @@ public class ListViewFragment extends BaseFragment {
         recyclerView.addItemDecoration(new DividerItemDecoration(getFragmentContext(), DividerItemDecoration.VERTICAL));
         adapter = new RestaurantRecyclerViewAdapter(callback);
         recyclerView.setAdapter(adapter);
+    }
+
+    /**
+     * Add restaurant in recycler view
+     * @param place restaurant
+     * @param picture restaurant image
+     * @param workmateCount number of workmate on this restaurant
+     */
+    private void addRestaurantInRecyclerView(Place place, Bitmap picture, int workmateCount) {
+        adapter.addPlace(place, picture, workmateCount);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
+        placesClient = Places.createClient(getFragmentContext());
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getCurrentLocation();
     }
 
     /**
@@ -134,7 +160,7 @@ public class ListViewFragment extends BaseFragment {
                             }
                         }
                         if (!placesID.isEmpty()) {
-                            // get details
+                            getRestaurantDetails(placesID);
                         }
                     } else {
                         textViewIsEmpty.setVisibility(View.VISIBLE);
@@ -146,6 +172,52 @@ public class ListViewFragment extends BaseFragment {
         } else {
             getLocationPermission();
         }
+    }
+
+    /**
+     * retrieve the details of each restaurant passed in parameter
+     * @param placesId restaurants
+     */
+    private void getRestaurantDetails(@NonNull List<String> placesId) {
+
+        for (String placeId : placesId) {
+            FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId, PLACE_FIELDS);
+
+            placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+                Place place = response.getPlace();
+
+                if (place.getPhotoMetadatas() != null) {
+                    FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
+                            .setMaxWidth(500)
+                            .setMaxHeight(250)
+                            .build();
+
+                    placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) ->
+                            countWorkmates(place, fetchPhotoResponse.getBitmap()))
+                            .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                } else {
+                    countWorkmates(place, null);
+                }
+            }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
+        }
+    }
+
+    /**
+     * Count the number of workmate on the restaurant passed in parameter
+     * @param place restaurant
+     * @param bitmap restaurant picture
+     */
+    private void countWorkmates(@NonNull Place place, Bitmap bitmap) {
+        RestaurantHelper.getRestaurant(place.getId()).addOnCompleteListener(doc -> {
+            if (doc.isSuccessful() && doc.getResult() != null) {
+                Restaurant restaurant = doc.getResult().toObject(Restaurant.class);
+                int workmateCount = 0;
+                if (restaurant != null) {
+                    workmateCount = restaurant.getUsers().size();
+                }
+                addRestaurantInRecyclerView(place, bitmap, workmateCount);
+            }
+        });
     }
 
     /**
@@ -172,6 +244,5 @@ public class ListViewFragment extends BaseFragment {
             }
         }
     }
-
 
 }
