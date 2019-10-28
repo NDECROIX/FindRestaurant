@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
+import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.view.WorkmatesRecyclerViewAdapter;
@@ -41,7 +44,7 @@ import static com.decroix.nicolas.go4lunch.api.UserHelper.getUsers;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class WorkmatesFragment extends BaseFragment implements WorkmatesRecyclerViewAdapter.OnClickUserListener {
+public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesRecyclerViewAdapter.OnClickUserListener, TextWatcher {
 
     @BindView(R.id.fragment_workmate_recycler_view)
     RecyclerView recyclerView;
@@ -151,5 +154,32 @@ public class WorkmatesFragment extends BaseFragment implements WorkmatesRecycler
                 }
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+    }
+
+    //-------------------------------------------
+    // Text Watcher for filter the recycler view
+    //-------------------------------------------
+
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        String text = charSequence.toString().toLowerCase();
+        adapter.clearUsers();
+        if (!text.isEmpty()) {
+            for (User user : users) {
+                if (user.getUsername().toLowerCase().contains(text)) {
+                    adapter.addUser(user);
+                }
+            }
+        } else {
+            adapter.updateUsersList(users);
+        }
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {
     }
 }
