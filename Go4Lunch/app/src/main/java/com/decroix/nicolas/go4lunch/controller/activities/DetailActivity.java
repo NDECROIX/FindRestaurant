@@ -264,4 +264,19 @@ public class DetailActivity extends BaseActivity {
             });
         }
     }
+
+    /**
+     * Handle the click on the like button
+     */
+    @OnClick(R.id.detail_activity_like_btn)
+    public void likeRestaurantBtn(){
+        if (!myUser.getFavouritePlaceID().contains(placeRestaurant.getId())){
+            UserHelper.addRestaurantToFavorites(getCurrentUserID(), placeRestaurant.getId())
+                    .addOnSuccessListener(task ->
+                            showMessage(placeRestaurant.getName() + getString(R.string.restaurant_added_to_the_favorites)))
+                    .addOnFailureListener(this.onFailureListener(getString(R.string.afl_add_restaurant_to_favorites)));
+        } else {
+            showMessage(getString(R.string.restaurant_already_added));
+        }
+    }
 }
