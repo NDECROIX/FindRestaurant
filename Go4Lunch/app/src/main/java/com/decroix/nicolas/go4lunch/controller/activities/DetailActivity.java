@@ -13,8 +13,13 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
+import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
+import com.decroix.nicolas.go4lunch.models.User;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -22,6 +27,9 @@ import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getDistance;
+import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours;
 
 public class DetailActivity extends BaseActivity {
 
@@ -43,6 +51,10 @@ public class DetailActivity extends BaseActivity {
     private static final String RESTAURANT = "placeRestaurant";
     private static final String RESTAURANT_BITMAP = "restaurant_bitmap";
     private static final String MY_LOCATION = "my_location";
+
+    private Place placeRestaurant;
+    private User myUser;
+    private PlacesClientHelper placesClientHelper;
 
     /**
      * Create an intent of this class
@@ -70,6 +82,53 @@ public class DetailActivity extends BaseActivity {
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
         configToolbar();
+        getUserFromFirestore();
+    }
+
+    /**
+     * Get data user's from firestore
+     */
+    private void getUserFromFirestore() {
+        UserHelper.getUser(getCurrentUserID()).addOnCompleteListener(doc -> {
+            if (doc.isSuccessful() && doc.getResult() != null){
+                myUser = doc.getResult().toObject(User.class);
+                displayPlaceDetails();
+            }
+        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
+    }
+
+    /**
+     * Display the details of the restaurant on the screen
+     */
+    private void displayPlaceDetails() {
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            this.placeRestaurant = bundle.getParcelable(RESTAURANT);
+            Location myLocation = bundle.getParcelable(MY_LOCATION);
+            Bitmap restaurantBitmap = bundle.getParcelable(RESTAURANT_BITMAP);
+
+            if (getSupportActionBar() != null
+                    && placeRestaurant.getOpeningHours() != null
+                    && placeRestaurant.getLatLng() != null){
+                getSupportActionBar()
+                        .setTitle(getOpeningHours(placeRestaurant.getOpeningHours()));
+            }
+
+            restaurantTitle.setText(placeRestaurant.getName());
+            restaurantAddress.setText(placeRestaurant.getAddress());
+            restaurantAddress.append(" ");
+            if (myLocation != null && placeRestaurant.getLatLng() != null) {
+                LatLng myLatLong = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                restaurantAddress.append(getDistance(placeRestaurant.getLatLng(), myLatLong));
+            }
+            if (placeRestaurant.getRating() != null) {
+                float rating = (float) (placeRestaurant.getRating() - 2);
+                restaurantRating.setRating((rating > 0) ? rating : 0);
+            }
+            if (restaurantBitmap != null) {
+                Glide.with(this).load(restaurantBitmap).into(restaurantPicture);
+            }
+        }
     }
 
     /**
