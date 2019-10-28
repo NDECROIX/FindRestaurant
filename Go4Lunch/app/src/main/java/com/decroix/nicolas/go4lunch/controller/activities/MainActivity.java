@@ -259,6 +259,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         startActivity(AuthActivity.newIntent(this));
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        activeFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
     class HeaderViewHolder {
         @BindView(R.id.main_activity_nav_header_avatar)
         protected ImageView mAvatar;
