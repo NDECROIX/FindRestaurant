@@ -44,4 +44,21 @@
     <string name="bottom_navigation_menu_workmates">Workmates</string>
     <string name="bottom_navigation_menu_chat">Chat</string>
 
+    <!-- NAVIGATION DRAWER -->
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- TOOLBAR -->
+    <string name="toolbar_title_hungry">I\'m Hungry!</string>
+    <string name="toolbar_title_workmates">Available workmates</string>
+    <string name="toolbar_title_chat">Chat</string>
+    <string name="toolbar_title_settings">Settings</string>
+
+    <!-- MAP VIEW FRAGMENT -->
+    <string name="afl_get_location">Error when locating the device</string>
+    <string name="afl_fetch_place">Error when recovering surrounding places</string>
+    <string name="afl_get_restaurant">Error when recovering the restaurant</string>
+
 </resources>
