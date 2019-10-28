@@ -58,6 +58,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     // FRAGMENTS
     //------------
 
+    private final FragmentManager fragmentManager = getSupportFragmentManager();
+    private final MapViewFragment mapViewFragment = new MapViewFragment();
+    private final ListViewFragment listViewFragment = new ListViewFragment();
+    private final WorkmatesFragment workmatesFragment = new WorkmatesFragment();
+    private final ChatFragment chatFragment = new ChatFragment();
+    private Fragment activeFragment = mapViewFragment;
+
     /**
      * Create a intent of this activity
      *
@@ -73,15 +80,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
         if (!isCurrentUserLogged()) {
             startActivity(AuthActivity.newIntent(this));
         } else {
+            startFragment();
             configToolbar();
             configBottomView();
             configDrawerLayout();
             configNavigationView();
         }
+    }
+
+    /**
+     * Start the first fragment "MapViewFragment"
+     */
+    private void startFragment() {
+        fragmentManager.beginTransaction()
+                .add(R.id.activity_main_frame_layout, activeFragment)
+                .commit();
     }
 
     @Override
@@ -116,9 +132,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_activity_main_search) {
-            // Display the search view
+            searchItemSelected();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * performs an action according to the active fragment.
+     */
+    private void searchItemSelected() {
+        if (activeFragment == workmatesFragment) {
+            // start search toolbar from workmatesFragment
+        } else if (activeFragment == listViewFragment) {
+            // start search toolbar from listViewFragment
+        } else {
+            // start search toolbar from mapViewFragment
+        }
     }
 
     /**
@@ -167,22 +196,40 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private boolean updateMainFragment(int itemId) {
         switch (itemId) {
             case R.id.action_map_view:
-                // start mapViewFragment;
+                activeFragment = mapViewFragment;
                 break;
             case R.id.action_list_view:
-                // start listViewFragment;
+                activeFragment = listViewFragment;
                 break;
             case R.id.action_workmates:
-                // start workmatesFragment;
+                activeFragment = workmatesFragment;
                 break;
             case R.id.action_chat:
-                // start chatFragment;
+                activeFragment = chatFragment;
                 break;
             default:
                 return false;
         }
-
+        showFragment();
         return true;
+    }
+
+    /**
+     * Updates the active fragment
+     */
+    private void showFragment() {
+        Objects.requireNonNull(getSupportActionBar(), getString(R.string.rnn_action_bar_must_not_be_null));
+        if (activeFragment == workmatesFragment) {
+            getSupportActionBar().setTitle(getString(R.string.toolbar_title_workmates));
+        } else if (activeFragment == chatFragment) {
+            getSupportActionBar().setTitle(getString(R.string.toolbar_title_chat));
+        } else {
+            getSupportActionBar().setTitle(getString(R.string.toolbar_title_hungry));
+        }
+        fragmentManager.beginTransaction()
+                .replace(R.id.activity_main_frame_layout, activeFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
