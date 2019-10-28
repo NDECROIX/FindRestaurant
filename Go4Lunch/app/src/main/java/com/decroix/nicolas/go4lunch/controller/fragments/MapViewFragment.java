@@ -1,5 +1,6 @@
 package com.decroix.nicolas.go4lunch.controller.fragments;
 
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -36,13 +37,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -56,17 +61,32 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class MapViewFragment extends BaseFragment
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
+    public interface MapViewFragmentInterface {
+        void onClickRestaurantMarker(Place restaurant, @Nullable Bitmap bitmap);
+        void updateLastKnowLocation(Location mLastKnownLocation);
+    }
+
+    @BindView(R.id.fragment_map_view_fab)
+    FloatingActionButton fab;
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 898;
     private static final int DEFAULT_ZOOM = 18;
 
-    private GoogleMap mMap;
     private PlacesClient placesClient;
+    private GoogleMap mMap;
+    private MapViewFragmentInterface callbackRestaurantListener;
     private List<Marker> markers;
     private Location mLastKnownLocation;
 
     public MapViewFragment() {
-        // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
+        placesClient = Places.createClient(getFragmentContext());
+        markers = new ArrayList<>();
     }
 
     @Override
@@ -82,11 +102,25 @@ public class MapViewFragment extends BaseFragment
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
-        placesClient = Places.createClient(getFragmentContext());
-        markers = new ArrayList<>();
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        callbackRestaurantListener = (MapViewFragmentInterface) context;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (mMap != null){
+            markers.clear();
+            getCurrentPlaces();
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        updateLocationSetting();
+        updateMarker();
     }
 
     @OnClick(R.id.fragment_map_view_fab)
@@ -94,19 +128,60 @@ public class MapViewFragment extends BaseFragment
         getCurrentLocation();
     }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        updateLocationSetting();
-        updateMapStyle();
+    /**
+     * Get the last known location of the device
+     */
+    private void getCurrentLocation() {
+        LocationServices.getFusedLocationProviderClient(getFragmentContext()).getLastLocation()
+                .addOnCompleteListener(locationTask -> {
+                    if (locationTask.isSuccessful() && locationTask.getResult() != null) {
+                        mLastKnownLocation = locationTask.getResult();
+                        callbackRestaurantListener.updateLastKnowLocation(mLastKnownLocation);
+                        LatLng latLng = new LatLng(mLastKnownLocation.getLatitude(),
+                                mLastKnownLocation.getLongitude());
+                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
+                        mMap.animateCamera(cameraUpdate);
+                        getCurrentPlaces();
+                    }
+                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_location)));
     }
 
     /**
      * Update the style map with the style_json
      */
-    private void updateMapStyle() {
+    private void updateMarker() {
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getFragmentContext(), R.raw.style_json));
     }
+
+    /**
+     * Get detail of the restaurant whose ID is passed as a parameter
+     * @param id restaurant ID
+     */
+    private void getRestaurantDetail(String id) {
+
+        FetchPlaceRequest request = FetchPlaceRequest.newInstance(id, PLACE_FIELDS);
+
+        placesClient.fetchPlace(request).addOnSuccessListener(response -> {
+            Place place = response.getPlace();
+            List<Place.Type> types = place.getTypes();
+            if (types != null && types.contains(Place.Type.RESTAURANT)) {
+                if (place.getPhotoMetadatas() != null) {
+                    FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
+                            .setMaxWidth(500)
+                            .setMaxHeight(250)
+                            .build();
+
+                    placesClient.fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
+                            callbackRestaurantListener.onClickRestaurantMarker(place, fetchPhotoResponse.getBitmap()))
+                            .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                } else {
+                    callbackRestaurantListener.onClickRestaurantMarker(place, null);
+                }
+            }
+        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+    }
+
+    // PERMISSION
 
     /**
      * Updating the parameters of the mMap
@@ -114,6 +189,7 @@ public class MapViewFragment extends BaseFragment
     @AfterPermissionGranted(PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
     private void updateLocationSetting() {
         mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.setOnMarkerClickListener(this);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             mMap.setMyLocationEnabled(true);
@@ -138,22 +214,6 @@ public class MapViewFragment extends BaseFragment
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    /**
-     * Get the last known location of the device
-     */
-    private void getCurrentLocation() {
-        LocationServices.getFusedLocationProviderClient(getFragmentContext()).getLastLocation()
-                .addOnCompleteListener(locationTask -> {
-                    if (locationTask.isSuccessful() && locationTask.getResult() != null) {
-                        mLastKnownLocation = locationTask.getResult();
-                        LatLng latLng = new LatLng(mLastKnownLocation.getLatitude(),
-                                mLastKnownLocation.getLongitude());
-                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
-                        mMap.animateCamera(cameraUpdate);
-                    }
-                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_location)));
     }
 
     /**
@@ -229,9 +289,10 @@ public class MapViewFragment extends BaseFragment
     public boolean onMarkerClick(@NonNull Marker marker) {
         Place place = (Place) marker.getTag();
         if (place != null) {
-            // get detail
+            getRestaurantDetail(((Place) marker.getTag()).getId());
             return true;
         }
         return false;
     }
+
 }
