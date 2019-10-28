@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <item
+        android:id="@+id/activity_main_drawer_lunch"
+        android:icon="@drawable/ic_your_lunch_24"
+        android:title="@string/your_lunch"/>
+    <item
+        android:id="@+id/activity_main_drawer_settings"
+        android:icon="@mipmap/ic_setting_24"
+        android:title="@string/settings" />
+    <item
+        android:id="@+id/activity_main_drawer_logout"
+        android:icon="@drawable/ic_power_settings_24"
+        android:title="@string/logout" />
+</menu>
