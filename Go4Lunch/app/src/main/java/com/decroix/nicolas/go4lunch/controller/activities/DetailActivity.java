@@ -21,8 +21,24 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import javax.annotation.Nullable;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class DetailActivity extends BaseActivity {
+
+    @BindView(R.id.activity_detail_toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.activity_detail_picture)
+    ImageView restaurantPicture;
+    @BindView(R.id.detail_activity_title)
+    TextView restaurantTitle;
+    @BindView(R.id.detail_activity_rating)
+    RatingBar restaurantRating;
+    @BindView(R.id.detail_activity_address)
+    TextView restaurantAddress;
+    @BindView(R.id.detail_activity_recycler_view)
+    RecyclerView recyclerView;
+    @BindView(R.id.activity_detail_fab)
+    FloatingActionButton fab;
 
     private static final String RESTAURANT = "placeRestaurant";
     private static final String RESTAURANT_BITMAP = "restaurant_bitmap";
@@ -52,5 +68,18 @@ public class DetailActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        ButterKnife.bind(this);
+        configToolbar();
+    }
+
+    /**
+     * Configuration of the toolbar
+     */
+    private void configToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("");
+        }
     }
 }
