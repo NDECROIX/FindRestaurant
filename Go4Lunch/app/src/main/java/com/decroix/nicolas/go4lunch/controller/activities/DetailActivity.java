@@ -244,4 +244,24 @@ public class DetailActivity extends BaseActivity {
                 })
                 .addOnFailureListener(this.onFailureListener(getString(R.string.afl_add_user_in_list)));
     }
+
+    /**
+     * Handle the click on the website button.
+     */
+    @OnClick(R.id.detail_activity_web_btn)
+    public void openTheRestaurantWebsite(){
+        if (placesClientHelper == null) {
+            placesClientHelper = new PlacesClientHelper(this);
+        }
+        if (placeRestaurant.getId() != null) {
+            placesClientHelper.getWebsiteFromPlace(placeRestaurant.getId()).addOnSuccessListener(response -> {
+                Place place = response.getPlace();
+                if (place.getWebsiteUri() != null) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, place.getWebsiteUri()));
+                } else {
+                    showMessage(getString(R.string.no_website));
+                }
+            });
+        }
+    }
 }
