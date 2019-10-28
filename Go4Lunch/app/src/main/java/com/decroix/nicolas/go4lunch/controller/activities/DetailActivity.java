@@ -24,6 +24,7 @@ import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
 import com.decroix.nicolas.go4lunch.view.DetailActivityRecyclerViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
@@ -91,19 +92,9 @@ public class DetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
-        configToolbar();
         getUserFromFirestore();
-    }
-
-    /**
-     * Configuration of the toolbar
-     */
-    private void configToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("");
-        }
+        configToolbar();
+        displayPlaceDetails();
     }
 
     /**
@@ -113,44 +104,8 @@ public class DetailActivity extends BaseActivity {
         UserHelper.getUser(getCurrentUserID()).addOnCompleteListener(doc -> {
             if (doc.isSuccessful() && doc.getResult() != null){
                 myUser = doc.getResult().toObject(User.class);
-                displayPlaceDetails();
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
-    }
-
-    /**
-     * Display the details of the restaurant on the screen
-     */
-    private void displayPlaceDetails() {
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            this.placeRestaurant = bundle.getParcelable(RESTAURANT);
-            Location myLocation = bundle.getParcelable(MY_LOCATION);
-            Bitmap restaurantBitmap = bundle.getParcelable(RESTAURANT_BITMAP);
-
-            if (getSupportActionBar() != null
-                    && placeRestaurant.getOpeningHours() != null
-                    && placeRestaurant.getLatLng() != null){
-                getSupportActionBar()
-                        .setTitle(getOpeningHours(placeRestaurant.getOpeningHours()));
-            }
-
-            restaurantTitle.setText(placeRestaurant.getName());
-            restaurantAddress.setText(placeRestaurant.getAddress());
-            restaurantAddress.append(" ");
-            if (myLocation != null && placeRestaurant.getLatLng() != null) {
-                LatLng myLatLong = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                restaurantAddress.append(getDistance(placeRestaurant.getLatLng(), myLatLong));
-            }
-            if (placeRestaurant.getRating() != null) {
-                float rating = (float) (placeRestaurant.getRating() - 2);
-                restaurantRating.setRating((rating > 0) ? rating : 0);
-            }
-            if (restaurantBitmap != null) {
-                Glide.with(this).load(restaurantBitmap).into(restaurantPicture);
-            }
-            displayWorkmates();
-        }
     }
 
     /**
@@ -171,15 +126,6 @@ public class DetailActivity extends BaseActivity {
     }
 
     /**
-     * Config the recycler view with the user list
-     * @param users User list
-     */
-    private void configRecyclerView(List<User> users) {
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new DetailActivityRecyclerViewAdapter(users));
-    }
-
-    /**
      * Update the color of the floating action button
      * @param users Users registered on the restaurant
      */
@@ -194,57 +140,21 @@ public class DetailActivity extends BaseActivity {
     }
 
     /**
+     * Config the recycler view with the user list
+     * @param users User list
+     */
+    private void configRecyclerView(List<User> users) {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new DetailActivityRecyclerViewAdapter(users));
+    }
+
+    /**
      * Handle the click on the floating action button.
      */
     @OnClick(R.id.activity_detail_fab)
     public void onFabClick() {
         addRestaurantForLunch();
-    }
 
-    /**
-     * Add the restaurant for lunch.
-     * Update the profile user in the database.
-     * Add the user in the users list.
-     * Delete the user from the last restaurant if exist
-     */
-    private void addRestaurantForLunch() {
-        if (!myUser.getLunchRestaurantID().equals(placeRestaurant.getId())){
-            if (myUser.getLunchRestaurantID() != null && !myUser.getLunchRestaurantID().isEmpty()) {
-                //Remove user from users list
-                RestaurantHelper.removeUserFromList(myUser.getLunchRestaurantID(), myUser)
-                        .addOnCompleteListener(task -> {
-                            // Update the user profile
-                            UserHelper.updateLunchRestaurant(FirebaseAuth.getInstance().getUid(), new Restaurant(placeRestaurant))
-                                    .addOnFailureListener(this.onFailureListener(getString(R.string.afl_update_lunch_restaurant)));
-                        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_remove_user_from_list)));
-            } else {
-                UserHelper.updateLunchRestaurant(FirebaseAuth.getInstance().getUid(), new Restaurant(placeRestaurant))
-                        .addOnFailureListener(this.onFailureListener(getString(R.string.afl_update_lunch_restaurant)));
-            }
-
-            // Check if the restaurant exist in the database else if create it.
-            RestaurantHelper.getRestaurant(placeRestaurant.getId()).addOnCompleteListener(snapshotTask -> {
-                if (snapshotTask.isSuccessful() && snapshotTask.getResult() != null) {
-                    addUserInWorkmateList();
-                } else {
-                    Restaurant newRestaurant = new Restaurant(this.placeRestaurant);
-                    RestaurantHelper.createRestaurant(newRestaurant).addOnCompleteListener(task1 -> addUserInWorkmateList());
-                }
-            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_restaurant)));
-        } else {
-            showMessage(getString(R.string.restaurant_already_added));
-        }
-    }
-    /**
-     * Add the currently user in the users list
-     */
-    private void addUserInWorkmateList() {
-        RestaurantHelper.addUserInList(placeRestaurant.getId(), myUser)
-                .addOnSuccessListener(result -> {
-                    fab.setImageResource(R.drawable.ic_check_circle_dark_24);
-                    getUserFromFirestore();
-                })
-                .addOnFailureListener(this.onFailureListener(getString(R.string.afl_add_user_in_list)));
     }
 
     /**
@@ -311,5 +221,107 @@ public class DetailActivity extends BaseActivity {
         Intent dialIntent = new Intent(Intent.ACTION_DIAL);
         dialIntent.setData(Uri.parse("tel:" + phoneNumber));
         startActivity(dialIntent);
+    }
+
+    /**
+     * Add the restaurant for lunch.
+     * Update the profile user in the database.
+     * Add the user in the users list.
+     * Delete the user from the last restaurant if exist
+     */
+    private void addRestaurantForLunch() {
+
+        if (!myUser.getLunchRestaurantID().equals(placeRestaurant.getId())){
+            if (myUser.getLunchRestaurantID() != null && !myUser.getLunchRestaurantID().isEmpty()) {
+                //Remove user from users list
+                RestaurantHelper.removeUserFromList(myUser.getLunchRestaurantID(), myUser)
+                        .addOnCompleteListener(task -> {
+                            // Update the user profile
+                            UserHelper.updateLunchRestaurant(FirebaseAuth.getInstance().getUid(), new Restaurant(placeRestaurant))
+                                    .addOnFailureListener(this.onFailureListener(getString(R.string.afl_update_lunch_restaurant)));
+                        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_remove_user_from_list)));
+            } else {
+                UserHelper.updateLunchRestaurant(FirebaseAuth.getInstance().getUid(), new Restaurant(placeRestaurant))
+                        .addOnFailureListener(this.onFailureListener(getString(R.string.afl_update_lunch_restaurant)));
+            }
+
+            // Check if the restaurant exist in the database else if create it.
+            RestaurantHelper.getRestaurant(placeRestaurant.getId()).addOnCompleteListener(snapshotTask -> {
+                if (snapshotTask.isSuccessful() && snapshotTask.getResult() != null) {
+                    addUserInWorkmateList();
+                } else {
+                    Restaurant newRestaurant = new Restaurant(this.placeRestaurant);
+                    RestaurantHelper.createRestaurant(newRestaurant).addOnCompleteListener(task1 -> addUserInWorkmateList());
+                }
+            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_restaurant)));
+        } else {
+            showMessage(getString(R.string.restaurant_already_added));
+        }
+    }
+
+    /**
+     * Add the currently user in the users list
+     */
+    private void addUserInWorkmateList() {
+        RestaurantHelper.addUserInList(placeRestaurant.getId(), myUser)
+                .addOnSuccessListener(result -> {
+                    fab.setImageResource(R.drawable.ic_check_circle_dark_24);
+                    getUserFromFirestore();
+                    createAlarmDaily();
+                })
+                .addOnFailureListener(this.onFailureListener(getString(R.string.afl_add_user_in_list)));
+    }
+
+    /**
+     * Create a daily alarm that displays a notification every days.
+     */
+    private void createAlarmDaily() {
+        new NotificationHelper(this).createAlarmDaily();
+    }
+
+    /**
+     * Configuration of the toolbar
+     */
+    private void configToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("");
+        }
+    }
+
+    /**
+     * Display the details of the restaurant on the screen
+     */
+    private void displayPlaceDetails() {
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            this.placeRestaurant = bundle.getParcelable(RESTAURANT);
+            Location myLocation = bundle.getParcelable(MY_LOCATION);
+            Bitmap restaurantBitmap = bundle.getParcelable(RESTAURANT_BITMAP);
+
+            if (getSupportActionBar() != null
+                    && placeRestaurant.getOpeningHours() != null
+                    && placeRestaurant.getLatLng() != null){
+                getSupportActionBar()
+                        .setTitle(getOpeningHours(placeRestaurant.getOpeningHours()));
+            }
+
+            restaurantTitle.setText(placeRestaurant.getName());
+            restaurantAddress.setText(placeRestaurant.getAddress());
+            restaurantAddress.append(" ");
+            if (myLocation != null && placeRestaurant.getLatLng() != null) {
+                LatLng myLatLong = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                restaurantAddress.append(getDistance(placeRestaurant.getLatLng(), myLatLong));
+            }
+            if (placeRestaurant.getRating() != null) {
+                float rating = (float) (placeRestaurant.getRating() - 2);
+                restaurantRating.setRating((rating > 0) ? rating : 0);
+            }
+            if (restaurantBitmap != null) {
+                Glide.with(this).load(restaurantBitmap).into(restaurantPicture);
+            }
+            displayWorkmates();
+        }
     }
 }
