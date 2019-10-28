@@ -2,6 +2,7 @@ package com.decroix.nicolas.go4lunch.controller.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -16,12 +17,17 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
+import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
+import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.view.DetailActivityRecyclerViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -86,6 +92,17 @@ public class DetailActivity extends BaseActivity {
     }
 
     /**
+     * Configuration of the toolbar
+     */
+    private void configToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("");
+        }
+    }
+
+    /**
      * Get data user's from firestore
      */
     private void getUserFromFirestore() {
@@ -128,17 +145,47 @@ public class DetailActivity extends BaseActivity {
             if (restaurantBitmap != null) {
                 Glide.with(this).load(restaurantBitmap).into(restaurantPicture);
             }
+            displayWorkmates();
         }
     }
 
     /**
-     * Configuration of the toolbar
+     * Get and display workmate registered in the restaurant.
      */
-    private void configToolbar() {
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("");
+    private void displayWorkmates() {
+        RestaurantHelper.getRestaurant(placeRestaurant.getId()).addOnSuccessListener(result -> {
+            if (result != null) {
+                Restaurant restaurant = result.toObject(Restaurant.class);
+                if (restaurant != null && restaurant.getUsers() != null) {
+                    List<User> users = restaurant.getUsers();
+                    updateFAB(users);
+                    users.remove(myUser);
+                    configRecyclerView(users);
+                }
+            }
+        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_restaurant)));
+    }
+
+    /**
+     * Config the recycler view with the user list
+     * @param users User list
+     */
+    private void configRecyclerView(List<User> users) {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new DetailActivityRecyclerViewAdapter(users));
+    }
+
+    /**
+     * Update the color of the floating action button
+     * @param users Users registered on the restaurant
+     */
+    private void updateFAB(List<User> users) {
+        String myUid = getCurrentUserID();
+        for (User user : users) {
+            if (user.getUid().equals(myUid)) {
+                this.fab.setImageResource(R.drawable.ic_check_circle_dark_24);
+                break;
+            }
         }
     }
 }
