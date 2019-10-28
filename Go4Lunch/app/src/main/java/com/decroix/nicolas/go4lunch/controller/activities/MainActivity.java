@@ -2,6 +2,7 @@ package com.decroix.nicolas.go4lunch.controller.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +27,7 @@ import com.decroix.nicolas.go4lunch.controller.fragments.ChatFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.ListViewFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.MapViewFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.WorkmatesFragment;
+import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -64,6 +66,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private final WorkmatesFragment workmatesFragment = new WorkmatesFragment();
     private final ChatFragment chatFragment = new ChatFragment();
     private Fragment activeFragment = mapViewFragment;
+
+    public Location mLastKnownLocation;
 
     /**
      * Create a intent of this activity
@@ -142,11 +146,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private void searchItemSelected() {
         if (activeFragment == workmatesFragment) {
-            // start search toolbar from workmatesFragment
+            ((WorkmatesFragment) activeFragment).configSearchToolbar(null, null, ((WorkmatesFragment) activeFragment));
         } else if (activeFragment == listViewFragment) {
-            // start search toolbar from listViewFragment
+            ((ListViewFragment) activeFragment).configSearchToolbar((AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener) activeFragment, mLastKnownLocation, null);
         } else {
-            // start search toolbar from mapViewFragment
+            ((MapViewFragment) activeFragment).configSearchToolbar(((AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener) activeFragment), mLastKnownLocation, null);
         }
     }
 
