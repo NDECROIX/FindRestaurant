@@ -1,0 +1,30 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="@string/settings_category_notification">
+
+        <SwitchPreferenceCompat
+            app:key="notification"
+            app:title="@string/settings_title_notification"
+            app:defaultValue="true"
+            app:summary="@string/settings_summary_notification"
+            app:icon="@drawable/ic_notifications_active_24"/>
+
+        <Preference
+            app:key="notification_time"
+            app:title="Notification time"
+            app:summary="@string/settings_summary_time"
+            app:icon="@drawable/ic_alarm_notification_24"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_category_account">
+
+        <Preference
+            app:key="delete_account"
+            app:title="@string/settings_title_delete_account"
+            app:summary="@string/settings_summary_delete_account"
+            app:icon="@drawable/ic_account_circle_24"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>
