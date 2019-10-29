@@ -41,7 +41,7 @@ public class AutocompleteRecyclerViewAdapter extends RecyclerView.Adapter<Autoco
     @NonNull
     @Override
     public AutocompleteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.toolbar_search_autocomplete_item,
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_main_toolbar_search_autocomplete_item,
                 parent, false);
         return new AutocompleteViewHolder(view);
     }

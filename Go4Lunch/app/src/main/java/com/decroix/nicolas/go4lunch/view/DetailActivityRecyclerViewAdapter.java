@@ -31,7 +31,7 @@ public class DetailActivityRecyclerViewAdapter extends RecyclerView.Adapter<Deta
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.detail_activity_item, parent, false);
+                .inflate(R.layout.activity_detail_item, parent, false);
         return new ViewHolder(view);
     }
 

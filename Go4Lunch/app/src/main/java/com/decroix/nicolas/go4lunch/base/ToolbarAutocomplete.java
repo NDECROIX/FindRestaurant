@@ -67,8 +67,6 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
 
     @Override
     public void onDestroyView() {
-        toolbarViewHolder.searchEditText.setText("");
-        showToolbar(true);
         super.onDestroyView();
     }
 
@@ -139,6 +137,7 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
             if (i == EditorInfo.IME_ACTION_DONE) {
                 toolbarViewHolder.searchEditText.setText("");
                 toolbarViewHolder.searchEditText.clearFocus();
+                showToolbar(true);
                 return true;
             }
             return false;
