@@ -15,7 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".controller.activities.SettingsActivity"></activity>
+        <activity
+            android:name=".controller.activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".controller.activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.decroix.nicolas.go4lunch.controller.activities.MainActivity" />
+        </activity>
+        <receiver android:name=".receiver.AlarmReceiver" />
         <activity android:name=".controller.activities.DetailActivity" />
         <activity android:name=".controller.activities.AuthActivity" />
         <activity
@@ -36,6 +45,27 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <!-- #Start Facebook -->
+        <meta-data android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
+            android:value="true"/>
+        <meta-data android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled"
+            android:value="true"/>
+        <meta-data android:name="com.facebook.sdk.AutoInitEnabled"
+            android:value="true"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"/>
+        <activity android:name="com.facebook.FacebookActivity"
+            android:configChanges= "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+        <!-- #End Facebook -->
     </application>
 
 </manifest>
