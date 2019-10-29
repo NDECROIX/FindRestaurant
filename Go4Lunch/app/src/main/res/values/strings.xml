@@ -127,4 +127,10 @@
     <string name="email">email</string>
     <string name="champ_empty">Empty fields…</string>
 
+    <!-- FRAGMENT CHAT -->
+    <string name="chat_is_empty">Chat is empty</string>
+    <string name="icd_picture_sent" translatable="false">picture_sent</string>
+    <string name="icd_button_add_image" translatable="false">button add image</string>
+    <string name="icd_button_send_message" translatable="false">button send message</string>
+
 </resources>
