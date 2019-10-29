@@ -90,7 +90,7 @@
     <string name="chat_is_empty">Chat is empty</string>
 
     <!-- FRAGMENT WORKMATES -->
-    <string name="workmates_hasnt_decided_yet"> hasn\'t decided yet</string>
+    <string name="workmates_hasnt_decided_yet">\u0020hasn\'t decided yet</string>
 
     <!-- IMAGE CONTENT DESCRIPTION -->
     <string name="icd_user_avatar" translatable="false">User avatar</string>

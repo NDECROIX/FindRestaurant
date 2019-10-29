@@ -48,7 +48,7 @@
     <string name="uac_connection_cancelled">Connexion annulée.</string>
     <string name="uac_no_image_chosen">Aucune image choisie !</string>
     <string name="unknown_phone_number">Numéro de téléphone inconnu</string>
-    <string name="workmates_hasnt_decided_yet"> n\'a pas encore décidé/e</string>
+    <string name="workmates_hasnt_decided_yet">\u0020n\'a pas encore décidé/e</string>
     <string name="btn_call">APPEL</string>
     <string name="btn_like">AIME</string>
     <string name="btn_sign_in_with_facebook">Connectez-vous avec Facebook</string>
