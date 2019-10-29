@@ -258,7 +258,7 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
                 displayUsersRestaurant();
                 break;
             case R.id.activity_main_drawer_settings:
-                // start setting activity;
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
             case R.id.activity_main_drawer_logout:
                 logout();
