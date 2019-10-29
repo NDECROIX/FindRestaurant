@@ -99,6 +99,7 @@ public class StorageHelperTest {
     /**
      * Delete image after test
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @DataPoint
     public void deleteImageUri() {
         File fileToDelete = new File(uriTest);
