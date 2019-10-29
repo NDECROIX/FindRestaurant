@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -33,6 +34,7 @@ import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.models.Message;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.ChatRecyclerViewAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -74,6 +76,11 @@ public class ChatFragment extends BaseFragment {
     private FirebaseAuth mAuth;
     private InputMethodManager inputMethodManager;
     private Uri uriImageSelected;
+
+    /**
+     * Required to test the recycler view
+     */
+    private TestRecyclerView callbackTest;
 
     public ChatFragment() {
         // Required empty public constructor
@@ -153,7 +160,10 @@ public class ChatFragment extends BaseFragment {
      */
     private void updateRecyclerView(List<Message> messages){
         adapter.updateMessages(messages);
-        recyclerView.smoothScrollToPosition(recyclerView.getBottom());
+        recyclerView.smoothScrollToPosition(recyclerView.getBottom());if (this.callbackTest != null){
+            this.callbackTest.recyclerViewHaveData();
+            this.callbackTest = null;
+        }
     }
 
     @OnClick(R.id.fragment_chat_send_btn)
@@ -259,5 +269,19 @@ public class ChatFragment extends BaseFragment {
         // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    /**
+     * Required to test the recycler view
+     * @param callback callback on IdlingResource
+     */
+    @VisibleForTesting
+    void registerOnCallBackTest(TestRecyclerView callback){
+        this.callbackTest = callback;
+        if (adapter.getItemCount() > 0){
+            this.callbackTest.recyclerViewHaveData();
+        } else {
+            this.callbackTest = callback;
+        }
     }
 }
