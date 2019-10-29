@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -26,6 +27,7 @@ import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
+import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.RestaurantRecyclerViewAdapter;
 import com.google.android.gms.location.LocationServices;
@@ -64,6 +66,11 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      * Request code for fine location permission
      */
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 898;
+
+    /**
+     * Required to test the recycler view
+     */
+    private TestRecyclerView callbackTest;
 
     private PlacesClient placesClient;
     private RestaurantRecyclerViewAdapter adapter;
@@ -108,6 +115,10 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      */
     private void addRestaurantInRecyclerView(Place place, Bitmap picture, int workmateCount) {
         adapter.addPlace(place, picture, workmateCount);
+        if (callbackTest != null && adapter.getItemCount() > 0) {
+            callbackTest.recyclerViewHaveData();
+            callbackTest = null;
+        }
     }
 
     @Override
@@ -260,6 +271,19 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
             Place place = response.getPlace();
             getRestaurantDetails(Collections.singletonList(place.getId()));
         }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
+    }
+
+    /**
+     * Required to test the recycler view
+     * @param callbackTest callback on IdlingResource
+     */
+    @VisibleForTesting
+    public void registerOnCallBackTest(TestRecyclerView callbackTest) {
+        if (adapter.getItemCount() > 0){
+            callbackTest.recyclerViewHaveData();
+        } else {
+            this.callbackTest = callbackTest;
+        }
     }
 
 }
