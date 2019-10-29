@@ -8,21 +8,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
@@ -35,6 +29,7 @@ import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
 import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.RestaurantRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.holders.HeaderViewHolder;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -46,11 +41,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener,
-MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener {
-
-    //------------
-    // VIEW
-    //------------
+        MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener {
 
     @BindView(R.id.activity_main_bottom_navigation)
     BottomNavigationView bottomNavigationView;
@@ -63,25 +54,30 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
     @BindView(R.id.main_activity_search_layout)
     ConstraintLayout mSearchView;
 
-    private HeaderViewHolder mHeaderViewHolder;
-
-    //------------
-    // FRAGMENTS
-    //------------
-
-    private final FragmentManager fragmentManager = getSupportFragmentManager();
+    // Fragments of the main activity
     private final MapViewFragment mapViewFragment = new MapViewFragment();
     private final ListViewFragment listViewFragment = new ListViewFragment();
     private final WorkmatesFragment workmatesFragment = new WorkmatesFragment();
     private final ChatFragment chatFragment = new ChatFragment();
     private Fragment activeFragment = mapViewFragment;
 
+    /**
+     * Header of the navigation view
+     */
+    private HeaderViewHolder mHeaderViewHolder;
+
+    /**
+     * Last known location of the device
+     */
     public Location mLastKnownLocation;
+
+    /**
+     * True if this activity was opened by the notification
+     */
     private boolean notificationCaller;
 
     /**
      * Create a intent of this activity
-     *
      * @param context Application context
      * @return The intent
      */
@@ -96,22 +92,39 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
         ButterKnife.bind(this);
         if (!isCurrentUserLogged()) {
             startActivity(AuthActivity.newIntent(this));
-        } else {
-            startFragment();
-            configToolbar();
-            configBottomView();
-            configDrawerLayout();
-            configNavigationView();
+            return;
         }
+        configView();
+    }
+
+    /**
+     * Configures all views
+     */
+    private void configView() {
+        startFragment();
+        configToolbar();
+        configBottomView();
+        configDrawerLayout();
+        configNavigationView();
     }
 
     /**
      * Start the first fragment "MapViewFragment"
      */
     private void startFragment() {
-        fragmentManager.beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .add(R.id.activity_main_frame_layout, activeFragment)
                 .commit();
+    }
+
+    /**
+     * Configures the toolbar
+     */
+    private void configToolbar() {
+        setSupportActionBar(mToolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(getString(R.string.toolbar_title_hungry));
+        }
     }
 
     @Override
@@ -121,26 +134,22 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
     }
 
     /**
-     * Displays the user data on the NavDrawer
+     * Displays user data on the NavDrawer or opens DetailActivity if the activity
+     * has been opened by a notification
      */
     private void updateUI() {
         if (!isCurrentUserLogged()) {
             startActivity(AuthActivity.newIntent(this));
         } else {
             Objects.requireNonNull(getCurrentUser(), getString(R.string.rnn_user_must_not_be_null));
-            Glide.with(this)
-                    .load(getCurrentUser().getPhotoUrl())
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(mHeaderViewHolder.mAvatar);
-            mHeaderViewHolder.mName.setText(getCurrentUser().getDisplayName());
-            mHeaderViewHolder.mEmail.setText(getCurrentUser().getEmail());
+            mHeaderViewHolder.fillView(getCurrentUser().getPhotoUrl(), getCurrentUser().getDisplayName(),
+                    getCurrentUser().getEmail());
         }
         if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
             displayUsersRestaurant();
             notificationCaller = true;
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -157,7 +166,7 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
     }
 
     /**
-     * performs an action according to the active fragment.
+     * Performs an action according to the active fragment.
      */
     private void searchItemSelected() {
         if (activeFragment == workmatesFragment) {
@@ -166,16 +175,6 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
             ((ListViewFragment) activeFragment).configSearchToolbar((AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener) activeFragment, mLastKnownLocation, null);
         } else {
             ((MapViewFragment) activeFragment).configSearchToolbar(((AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener) activeFragment), mLastKnownLocation, null);
-        }
-    }
-
-    /**
-     * Configures the toolbar
-     */
-    private void configToolbar() {
-        setSupportActionBar(mToolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(getString(R.string.toolbar_title_hungry));
         }
     }
 
@@ -237,6 +236,17 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
      * Updates the active fragment
      */
     private void showFragment() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.activity_main_frame_layout, activeFragment)
+                .addToBackStack(null)
+                .commit();
+        updateToolbarTitle();
+    }
+
+    /**
+     * Update the toolbar title
+     */
+    private void updateToolbarTitle() {
         Objects.requireNonNull(getSupportActionBar(), getString(R.string.rnn_action_bar_must_not_be_null));
         if (activeFragment == workmatesFragment) {
             getSupportActionBar().setTitle(getString(R.string.toolbar_title_workmates));
@@ -245,10 +255,6 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
         } else {
             getSupportActionBar().setTitle(getString(R.string.toolbar_title_hungry));
         }
-        fragmentManager.beginTransaction()
-                .replace(R.id.activity_main_frame_layout, activeFragment)
-                .addToBackStack(null)
-                .commit();
     }
 
     @Override
@@ -258,7 +264,7 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
                 displayUsersRestaurant();
                 break;
             case R.id.activity_main_drawer_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivity(SettingsActivity.newIntent(this));
                 break;
             case R.id.activity_main_drawer_logout:
                 logout();
@@ -271,7 +277,7 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
     }
 
     /**
-     * Logout from firebase and leave the current activity
+     * Logout from Firebase and leave the current activity
      */
     private void logout() {
         FirebaseAuth.getInstance().signOut();
@@ -292,37 +298,36 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
         UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(resultUser -> {
             if (resultUser != null) {
                 User user = resultUser.toObject(User.class);
-                if  (user != null && user.getLunchRestaurantID() != null){
+                if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
                     // Get place detail from the Google place api
-                    placesClientHelper.getPlaceDetails(user.getLunchRestaurantID())
-                            .addOnSuccessListener(place -> {
-                                if (place != null) {
-                                    Place myPlace = place.getPlace();
-                                    if (myPlace.getPhotoMetadatas() != null) {
-                                        // Get the restaurant picture if exist
-                                        placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0))
-                                                .addOnSuccessListener(fetchPhotoResponse -> {
-                                                    if (fetchPhotoResponse != null)
-                                                        startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
-                                                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                                    }else {
-                                        startDetailActivity(myPlace, null);
-                                    }
-                                }
-                            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+                    placesClientHelper.getPlaceDetails(user.getLunchRestaurantID()).addOnSuccessListener(place -> {
+                        if (place != null) {
+                            Place myPlace = place.getPlace();
+                            if (myPlace.getPhotoMetadatas() != null) {
+                                // Get the restaurant picture if exist
+                                placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0)).addOnSuccessListener(fetchPhotoResponse -> {
+                                    if (fetchPhotoResponse != null)
+                                        startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
+                                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                            } else {
+                                startDetailActivity(myPlace, null);
+                            }
+                        }
+                    }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
                 } else {
                     showMessage(getString(R.string.not_yet_chosen));
                 }
             }
-        });
+        }).addOnFailureListener(onFailureListener(getString(R.string.afl_get_user)));
     }
 
     /**
      * Start the activity DetailActivity
-     * @param place restaurant
+     *
+     * @param place  restaurant
      * @param bitmap restaurant's picture
      */
-    private void startDetailActivity(Place place, Bitmap bitmap){
+    private void startDetailActivity(Place place, Bitmap bitmap) {
         startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
     }
 
@@ -338,23 +343,11 @@ MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickR
 
     /**
      * Update the last known location
+     *
      * @param mLastKnownLocation actual location
      */
     @Override
     public void updateLastKnowLocation(Location mLastKnownLocation) {
         this.mLastKnownLocation = mLastKnownLocation;
-    }
-
-    class HeaderViewHolder {
-        @BindView(R.id.main_activity_nav_header_avatar)
-        protected ImageView mAvatar;
-        @BindView(R.id.main_activity_nav_header_name)
-        protected TextView mName;
-        @BindView(R.id.main_activity_nav_header_email)
-        protected TextView mEmail;
-
-        HeaderViewHolder(View view) {
-            ButterKnife.bind(this, view);
-        }
     }
 }
