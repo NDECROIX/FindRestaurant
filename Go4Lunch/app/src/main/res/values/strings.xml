@@ -1,41 +1,23 @@
 <resources>
+    <!-- APP NAME -->
     <string name="app_name">Go4Lunch</string>
 
     <!-- AUTH ACTIVITY -->
     <string name="find_a_nice_restaurant_and_invite_your_co_workers_for_lunch">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="btn_sign_in_with_facebook">Sign in with Facebook</string>
     <string name="btn_sign_in_with_google">Sign in with Google</string>
-    <string name="icd_logo_icon">logo icon</string>
 
-    <!-- OBJECT REQUIRE NON NULL -->
-    <string name="rnn_user_must_not_be_null">User must not be null.</string>
-    <string name="rnn_action_bar_must_not_be_null">Action must not be null.</string>
+    <!-- TITLE ACTIVITY -->
+    <string name="title_activity_detail" translatable="false">DetailActivity</string>
+    <string name="title_activity_settings" translatable="false">Settings</string>
 
-    <!-- ERROR -->
-    <string name="error_auth_failed">Authentication Failed.</string>
+    <!-- FACEBOOK -->
+    <string name="facebook_app_id" translatable="false">2536832146599059</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb2536832146599059</string>
 
-    <!-- ADD ON FAILURE LISTENER -->
-    <string name="afl_get_user">Error when creating a user</string>
-
-    <!-- USER ACTION CANCELED -->
-    <string name="uac_connection_cancelled">Connection cancelled.</string>
-
-    <!-- MAIN ACTIVITY -->
-    <string name="not_yet_chosen">You have not yet chosen!</string>
-    <string name="icd_background_picture" translatable="false">background picture</string>
-    <string name="dummy_text_go_for_lunch">Go4Lunch</string>
-    <string name="idc_nav_header_avatar_picture" translatable="false">avatar picture</string>
-    <string name="dummy_text_john_smith" translatable="false">John SMITH</string>
-    <string name="dummy_text_jsmith_1337_gmail_com" translatable="false">jsmith.1337@gmail.com</string>
-    <string name="icd_icon_search" translatable="false">icon search</string>
-    <string name="search_view_hint">search workmates</string>
-    <string name="icd_voice_speech_button" translatable="false">voice speech button</string>
-    <string name="places_powered_by_google">Powered by Google</string>
-    <string name="search_item">search</string>
-
-    <string name="your_lunch">YOUR LUNCH</string>
-    <string name="settings">SETTINGS</string>
-    <string name="logout">LOGOUT</string>
+    <!-- NAVIGATION DRAWER -->
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_map_view">Map View</string>
@@ -43,40 +25,56 @@
     <string name="bottom_navigation_menu_workmates">Workmates</string>
     <string name="bottom_navigation_menu_chat">Chat</string>
 
-    <!-- NAVIGATION DRAWER -->
-    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
-    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
-
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <!-- TOOLBAR -->
-    <string name="toolbar_title_hungry">I\'m Hungry!</string>
-    <string name="toolbar_title_workmates">Available workmates</string>
-    <string name="toolbar_title_chat">Chat</string>
-
-    <!-- MAP VIEW FRAGMENT -->
-    <string name="afl_get_location">Error when locating the device</string>
-    <string name="afl_fetch_place">Error when recovering surrounding places</string>
-    <string name="afl_get_restaurant">Error when recovering the restaurant</string>
-    <string name="afl_fetch_photo">Unable to download the image</string>
-
-    <!-- LIST VIEW FRAGMENT -->
-    <string name="no_restaurants_found">No restaurants found</string>
-    <string name="dummy_txt_le_zinc" translatable="false">Le Zinc</string>
-    <string name="dummy_txt_120m" translatable="false">120m</string>
-    <string name="dummy_txt_french_12_rue_du_faubourg_poissoni_re" translatable="false">French - 12 rue du faubourg Poissonière</string>
-    <string name="dummy_txt_2" translatable="false">(2)</string>
-    <string name="dummy_txt_open_until_7pm" translatable="false">open until 7pm</string>
-    <string name="icd_restaurant_picture" translatable="false">restaurant picture</string>
-    <string name="error_unknown_error">Error unknown</string>
-
-    <!-- WORKMATES FRAGMENT -->
-    <string name="icd_user_avatar" translatable="false">User avatar</string>
-    <string name="workmates_hasnt_decided_yet"> hasn\'t decided yet</string>
-
-    <!-- TOOLBAR AUTOCOMPLETE -->
+    <!-- SEARCH VIEW -->
+    <string name="search_view_hint">search workmates</string>
     <string name="search_view_speech_prompt" translatable="false">speech Prompt</string>
     <string name="search_view_speech_not_supported">Speech not supported</string>
+
+    <!-- NOTIFICATION -->
+    <string name="notification_channel_name" translatable="false">restaurant_notification</string>
+    <string name="notification_channel_description" translatable="false">handle notification restaurant</string>
+
+    <!-- SETTINGS -->
+
+    <!-- SETTINGS KEY -->
+    <string name="setting_key_notification" translatable="false">notification</string>
+    <string name="setting_key_notification_time" translatable="false">notification_time</string>
+    <string name="setting_key_delete_account" translatable="false">delete_account</string>
+
+    <!-- SETTINGS TITLE -->
+    <string name="settings_title_notification">Notification</string>
+    <string name="settings_title_delete_account">Delete my account</string>
+
+    <!-- SETTINGS SUMMARY -->
+    <string name="settings_summary_notification">Allow device to send a notification.</string>
+    <string name="settings_summary_time">Change the time the notification is sent.</string>
+    <string name="settings_summary_delete_account">This action is not reversible.</string>
+
+    <!-- SETTINGS CATEGORY -->
+    <string name="settings_category_account">Account</string>
+    <string name="settings_category_notification">Notification</string>
+
+    <!-- SETTINGS TIME DIALOG -->
+    <string name="tag_time_picker" translatable="false">Time picker</string>
+
+    <!-- SETTINGS ALERT DIALOG -->
+    <string name="alert_dialog_delete_account_title">Delete your account</string>
+    <string name="alert_dialog_delete_account_btn_delete">Delete</string>
+    <string name="alert_dialog_delete_account_btn_return">Return</string>
+    <string name="alert_dialog_delete_account_summary">Your account will be permanently deleted!</string>
+    <string name="msg_account_deleted">Account deleted</string>
+
+    <!-- NOTIFICATION -->
+    <string name="notification_default_time" translatable="false">12:00</string>
+    <string name="notification_joins_you">. Joins you :</string>
+    <string name="notification_time_update">Notification time update!</string>
+
+    <!-- USER ACTION CANCELED -->
+    <string name="uac_no_image_chosen">No image chosen !</string>
+    <string name="uac_connection_cancelled">Connection cancelled.</string>
+
+    <!-- MAIN ACTIVITY -->
+    <string name="not_yet_chosen">You have not yet chosen!</string>
 
     <!-- DETAIL ACTIVITY -->
     <string name="no_website">don\'t have website</string>
@@ -86,54 +84,74 @@
     <string name="btn_call">CALL</string>
     <string name="btn_like">LIKE</string>
     <string name="btn_website">WEBSITE</string>
-    <string name="dummy_text_le_zinc" translatable="false">Le Zinc</string>
-    <string name="dummy_text_french_restaurant_12_rue_du_faubourg_poissoni_re" translatable="false">French restaurant - 12 rue du faubourg Poissonière</string>
-    <string name="dummy_text_scarlett_is_joining" translatable="false">Scarlett is joining</string>
-    <string name="afl_add_user_in_list">Failure when adding the user to the restaurant list</string>
-    <string name="afl_update_lunch_restaurant">Failure when updating the user\'s restaurant</string>
-    <string name="afl_remove_user_from_list">Error when deleting the user from the restaurant list.</string>
-    <string name="afl_add_restaurant_to_favorites">Error when adding a restaurant to favorites</string>
-
-    <!-- SETTINGS KEY -->
-    <string name="setting_key_notification" translatable="false">notification</string>
-    <string name="setting_key_notification_time" translatable="false">notification_time</string>
-    <string name="setting_key_delete_account" translatable="false">delete_account</string>
-
-    <!-- NOTIFICATION -->
-    <string name="notification_default_time" translatable="false">12:00</string>
-    <string name="notification_joins_you">. Joins you :</string>
-    <string name="notification_time_update">Notification time update!</string>
-    <string name="notification_channel_name" translatable="false">restaurant_notification</string>
-    <string name="notification_channel_description" translatable="false">handle notification restaurant</string>
-
-    <!-- SETTINGS -->
-    <string name="settings_title_notification">Notification</string>
-    <string name="settings_title_delete_account">Delete my account</string>
-    <string name="settings_category_account">Account</string>
-    <string name="settings_category_notification">Notification</string>
-    <string name="tag_time_picker" translatable="false">Time picker</string>
-    <string name="alert_dialog_delete_account_title">Delete your account</string>
-    <string name="alert_dialog_delete_account_btn_delete">Delete</string>
-    <string name="alert_dialog_delete_account_btn_return">Return</string>
-    <string name="alert_dialog_delete_account_summary">Your account will be permanently deleted!</string>
-    <string name="msg_account_deleted">Account deleted</string>
-    <string name="settings_summary_notification">Allow device to send a notification.</string>
-    <string name="settings_summary_time">Change the time the notification is sent.</string>
-    <string name="settings_summary_delete_account">This action is not reversible.</string>
-    <string name="failure_email_password">Failure in email/password</string>
-    <string name="afl_delete_user">Failure to delete the user</string>
-    <string name="rnn_context_cannot_be_null" translatable="false">The context cannot be null.</string>
-    <string name="password">password</string>
-    <string name="email">email</string>
-    <string name="champ_empty">Empty fields…</string>
 
     <!-- FRAGMENT CHAT -->
     <string name="chat_is_empty">Chat is empty</string>
+
+    <!-- FRAGMENT WORKMATES -->
+    <string name="workmates_hasnt_decided_yet"> hasn\'t decided yet</string>
+
+    <!-- IMAGE CONTENT DESCRIPTION -->
+    <string name="icd_user_avatar" translatable="false">User avatar</string>
     <string name="icd_picture_sent" translatable="false">picture_sent</string>
+    <string name="icd_restaurant_picture" translatable="false">restaurant picture</string>
+    <string name="icd_background_picture" translatable="false">background picture</string>
+    <string name="idc_nav_header_avatar_picture" translatable="false">avatar picture</string>
+    <string name="icd_logo_icon" translatable="false">logo icon</string>
+    <string name="icd_icon_search" translatable="false">icon search</string>
+    <string name="icd_voice_speech_button" translatable="false">voice speech button</string>
     <string name="icd_button_add_image" translatable="false">button add image</string>
     <string name="icd_button_send_message" translatable="false">button send message</string>
+
+    <!-- TOOLBAR -->
+    <string name="toolbar_title_hungry">I\'m Hungry!</string>
+    <string name="toolbar_title_workmates">Available workmates</string>
+    <string name="toolbar_title_chat">Chat</string>
+    <string name="toolbar_title_settings">Settings</string>
+
+    <!-- OBJECT REQUIRE NON NULL -->
+    <string name="rnn_user_must_not_be_null" translatable="false">User must not be null.</string>
+    <string name="rnn_action_bar_must_not_be_null" translatable="false">Action must not be null.</string>
+    <string name="rnn_context_cannot_be_null" translatable="false">The context cannot be null.</string>
+
+    <!-- ERROR -->
+    <string name="error_auth_failed">Authentication Failed.</string>
+    <string name="error_unknown_error">Error unknown</string>
+
+    <!-- ADD ON FAILURE LISTENER -->
+    <string name="afl_get_user">Error when creating a user</string>
+    <string name="afl_add_restaurant_to_favorites">Error when adding a restaurant to favorites</string>
+    <string name="afl_get_restaurant">Error when recovering the restaurant</string>
+    <string name="afl_remove_user_from_list">Error when deleting the user from the restaurant list.</string>
+    <string name="afl_update_lunch_restaurant">Failure when updating the user\'s restaurant</string>
+    <string name="afl_add_user_in_list">Failure when adding the user to the restaurant list</string>
     <string name="afl_create_message">Failure when creating the message</string>
     <string name="afl_put_fil_on_firebase_storage">Failure during data reporting</string>
-    <string name="uac_no_image_chosen">No image chosen !</string>
+    <string name="afl_get_location">Error when locating the device</string>
+    <string name="afl_fetch_photo">Unable to download the image</string>
+    <string name="afl_fetch_place">Error when recovering surrounding places</string>
+    <string name="afl_delete_user">Failure to delete the user</string>
+
+    <!-- DUMMY TEXT -->
+    <string name="dummy_text_go_for_lunch">Go4Lunch</string>
+    <string name="dummy_text_john_smith" translatable="false">John SMITH</string>
+    <string name="dummy_text_jsmith_1337_gmail_com" translatable="false">jsmith.1337@gmail.com</string>
+    <string name="dummy_text_le_zinc" translatable="false">Le Zinc</string>
+    <string name="dummy_text_french_restaurant_12_rue_du_faubourg_poissoni_re" translatable="false">French restaurant - 12 rue du faubourg Poissonière</string>
+    <string name="dummy_txt_le_zinc" translatable="false">Le Zinc</string>
+    <string name="dummy_txt_120m" translatable="false">120m</string>
+    <string name="dummy_txt_french_12_rue_du_faubourg_poissoni_re" translatable="false">French - 12 rue du faubourg Poissonière</string>
+    <string name="dummy_txt_2" translatable="false">(2)</string>
+    <string name="dummy_txt_open_until_7pm" translatable="false">open until 7pm</string>
+    <string name="dummy_text_scarlett_is_joining" translatable="false">Scarlett is joining</string>
+    <string name="no_restaurants_found">No restaurants found</string>
+    <string name="your_lunch">YOUR LUNCH</string>
+    <string name="settings">SETTINGS</string>
+    <string name="logout">LOGOUT</string>
+    <string name="search_item">search</string>
+    <string name="password">password</string>
+    <string name="email">email</string>
+    <string name="failure_email_password">Failure in email/password</string>
+    <string name="champ_empty">Empty fields…</string>
 
 </resources>
