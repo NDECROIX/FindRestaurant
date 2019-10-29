@@ -32,7 +32,7 @@
     <string name="notification_time_update">Mise à jour de l\'heure de notification !</string>
     <string name="restaurant_added_to_the_favorites">a été ajouté aux favoris</string>
     <string name="restaurant_already_added">Restaurant déjà ajouté</string>
-    <string name="search_view_hint">chercher des collègues</string>
+    <string name="search_view_hint_restaurants">Chercher un collègue</string>
     <string name="search_view_speech_not_supported">La fonction parole n\'est pas prise en charge</string>
     <string name="settings_category_account">Compte</string>
     <string name="settings_category_notification">Notification</string>
@@ -64,4 +64,6 @@
     <string name="email">email</string>
     <string name="failure_email_password">Failure in email/password</string>
     <string name="champ_empty">Champs vides…</string>
+    <string name="afl_create_restaurant">Erreur lors de la création du restaurant</string>
+    <string name="search_view_hint_workmates">Chercher un restaurant</string>
 </resources>

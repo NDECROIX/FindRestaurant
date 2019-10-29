@@ -26,7 +26,8 @@
     <string name="bottom_navigation_menu_chat">Chat</string>
 
     <!-- SEARCH VIEW -->
-    <string name="search_view_hint">search workmates</string>
+    <string name="search_view_hint_restaurants">Search restaurants</string>
+    <string name="search_view_hint_workmates">Search workmates</string>
     <string name="search_view_speech_prompt" translatable="false">speech Prompt</string>
     <string name="search_view_speech_not_supported">Speech not supported</string>
 
@@ -111,7 +112,7 @@
 
     <!-- OBJECT REQUIRE NON NULL -->
     <string name="rnn_user_must_not_be_null" translatable="false">User must not be null.</string>
-    <string name="rnn_action_bar_must_not_be_null" translatable="false">Action must not be null.</string>
+    <string name="rnn_action_bar_must_not_be_null" translatable="false">Action bar must not be null.</string>
     <string name="rnn_context_cannot_be_null" translatable="false">The context cannot be null.</string>
 
     <!-- ERROR -->
@@ -153,5 +154,6 @@
     <string name="email">email</string>
     <string name="failure_email_password">Failure in email/password</string>
     <string name="champ_empty">Empty fields…</string>
+    <string name="afl_create_restaurant">Error when creating the restaurant</string>
 
 </resources>

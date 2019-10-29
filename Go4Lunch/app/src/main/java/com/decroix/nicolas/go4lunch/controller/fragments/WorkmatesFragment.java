@@ -26,7 +26,7 @@ import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
-import com.decroix.nicolas.go4lunch.view.WorkmatesRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.adapters.WorkmatesRecyclerViewAdapter;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;

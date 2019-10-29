@@ -1,11 +1,9 @@
-package com.decroix.nicolas.go4lunch.view;
+package com.decroix.nicolas.go4lunch.view.adapters;
 
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,14 +12,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.view.holders.WorkmatesViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<WorkmatesRecyclerViewAdapter.ViewHolder> {
+public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<WorkmatesViewHolder> {
 
     public interface OnClickUserListener{
         void onClickUser(String restaurant);
@@ -57,14 +53,14 @@ public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<Workmates
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public WorkmatesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_workmates_item, parent, false);
-        return new ViewHolder(view);
+        return new WorkmatesViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull WorkmatesViewHolder holder, int position) {
         User user = users.get(position);
 
         if (user.getUrlPicture() != null)
@@ -86,18 +82,5 @@ public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<Workmates
     @Override
     public int getItemCount() {
         return users.size();
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.fragment_workmates_item_picture)
-        ImageView workmatePicture;
-        @BindView(R.id.fragment_workmates_item_desc)
-        TextView workmateDesc;
-
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
     }
 }

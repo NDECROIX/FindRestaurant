@@ -1,16 +1,13 @@
-package com.decroix.nicolas.go4lunch.view;
+package com.decroix.nicolas.go4lunch.view.adapters;
 
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatRatingBar;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -19,6 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.utils.UsefulFunctions;
+import com.decroix.nicolas.go4lunch.view.holders.RestaurantViewHolder;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 
@@ -26,13 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getDistance;
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours;
 
-public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<RestaurantRecyclerViewAdapter.ViewHolder> {
+public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<RestaurantViewHolder> {
 
     public interface OnClickRestaurantItemListener {
         void onClickRestaurant(Place place, Bitmap bitmap);
@@ -65,16 +60,16 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_list_view_item, parent, false);
-        return new ViewHolder(view);
+        return new RestaurantViewHolder(view);
     }
 
     @Override
     // Glide manage this exception
     @SuppressWarnings({"unchecked"})
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
         RestaurantItem restaurantItem = restaurants.get(position);
         Place place = restaurantItem.place;
         Bitmap picture = restaurantItem.bitmap;
@@ -106,29 +101,6 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
     @Override
     public int getItemCount() {
         return restaurants.size();
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.fragment_list_item_picture)
-        ImageView restaurantPicture;
-        @BindView(R.id.fragment_list_item_title)
-        TextView restaurantTitle;
-        @BindView(R.id.fragment_list_item_distance)
-        TextView restaurantDistance;
-        @BindView(R.id.fragment_list_item_address)
-        TextView restaurantAddress;
-        @BindView(R.id.fragment_list_item_person)
-        TextView restaurantPerson;
-        @BindView(R.id.fragment_list_item_open)
-        TextView restaurantOpen;
-        @BindView(R.id.fragment_list_item_rating)
-        AppCompatRatingBar ratingBar;
-
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
     }
 
     class RestaurantItem {

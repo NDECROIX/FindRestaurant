@@ -24,7 +24,7 @@ import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
-import com.decroix.nicolas.go4lunch.view.DetailActivityRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.adapters.DetailActivityRecyclerViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;

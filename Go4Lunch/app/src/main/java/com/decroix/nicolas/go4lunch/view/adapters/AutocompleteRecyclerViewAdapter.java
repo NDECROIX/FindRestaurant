@@ -1,23 +1,20 @@
-package com.decroix.nicolas.go4lunch.view;
+package com.decroix.nicolas.go4lunch.view.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
+import com.decroix.nicolas.go4lunch.view.holders.AutocompleteViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-public class AutocompleteRecyclerViewAdapter extends RecyclerView.Adapter<AutocompleteRecyclerViewAdapter.AutocompleteViewHolder>{
+public class AutocompleteRecyclerViewAdapter extends RecyclerView.Adapter<AutocompleteViewHolder> {
 
     public interface onClickAutocompleteResultListener{
         void onClickAutocompleteResult(Restaurant restaurant);
@@ -56,16 +53,5 @@ public class AutocompleteRecyclerViewAdapter extends RecyclerView.Adapter<Autoco
     @Override
     public int getItemCount() {
         return restaurants.size();
-    }
-
-    class AutocompleteViewHolder extends RecyclerView.ViewHolder{
-
-        @BindView(R.id.dialog_autocomplete_item_name)
-        TextView name;
-
-        AutocompleteViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
     }
 }

@@ -22,7 +22,7 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
-import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;

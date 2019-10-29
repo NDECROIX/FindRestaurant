@@ -35,7 +35,7 @@ import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.models.Message;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
-import com.decroix.nicolas.go4lunch.view.ChatRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.adapters.ChatRecyclerViewAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;

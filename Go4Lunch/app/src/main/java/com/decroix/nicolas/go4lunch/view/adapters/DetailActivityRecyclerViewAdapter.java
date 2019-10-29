@@ -1,10 +1,8 @@
-package com.decroix.nicolas.go4lunch.view;
+package com.decroix.nicolas.go4lunch.view.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,13 +11,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.view.holders.DetailActivityViewHolder;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-public class DetailActivityRecyclerViewAdapter extends RecyclerView.Adapter<DetailActivityRecyclerViewAdapter.ViewHolder> {
+public class DetailActivityRecyclerViewAdapter extends RecyclerView.Adapter<DetailActivityViewHolder> {
 
     private final List<User> users;
 
@@ -29,14 +25,14 @@ public class DetailActivityRecyclerViewAdapter extends RecyclerView.Adapter<Deta
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public DetailActivityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.activity_detail_item, parent, false);
-        return new ViewHolder(view);
+        return new DetailActivityViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull DetailActivityViewHolder holder, int position) {
         User user = users.get(position);
 
         if (user.getUrlPicture() != null)
@@ -52,18 +48,5 @@ public class DetailActivityRecyclerViewAdapter extends RecyclerView.Adapter<Deta
     @Override
     public int getItemCount() {
         return users.size();
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.detail_activity_item_picture)
-        ImageView workmatePicture;
-        @BindView(R.id.detail_activity_item_desc)
-        TextView workmateDesc;
-
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
     }
 }

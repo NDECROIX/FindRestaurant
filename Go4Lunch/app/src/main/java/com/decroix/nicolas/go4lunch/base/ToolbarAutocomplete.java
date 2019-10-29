@@ -27,7 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
-import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
