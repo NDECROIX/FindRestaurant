@@ -20,11 +20,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.MessageHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
+import com.decroix.nicolas.go4lunch.models.Message;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.view.ChatRecyclerViewAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -70,6 +74,7 @@ public class ChatFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         chatIsEmpty.setVisibility(View.GONE);
         configRecyclerView();
+        listenerOnData();
         if (getActivity() != null){
             getActivity().findViewById(R.id.menu_activity_main_search).setVisibility(View.INVISIBLE);
         }
@@ -105,5 +110,28 @@ public class ChatFragment extends BaseFragment {
                 currentUser = task.toObject(User.class);
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
+    }
+
+    /**
+     * Create listener on data in Firestore for update chat in realtime
+     */
+    private void listenerOnData() {
+        MessageHelper.getAllMessageForChat().addSnapshotListener((snapshot, e) -> {
+            if (snapshot != null && !snapshot.getDocuments().isEmpty()) {
+                List<Message> messages = snapshot.toObjects(Message.class);
+                updateRecyclerView(messages);
+            } else {
+                chatIsEmpty.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    /**
+     * Update the list of messages
+     * @param messages Messages
+     */
+    private void updateRecyclerView(List<Message> messages){
+        adapter.updateMessages(messages);
+        recyclerView.smoothScrollToPosition(recyclerView.getBottom());
     }
 }
