@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".controller.activities.DetailActivity"></activity>
+        <activity android:name=".controller.activities.SettingsActivity"></activity>
+        <activity android:name=".controller.activities.DetailActivity" />
         <activity android:name=".controller.activities.AuthActivity" />
         <activity
             android:name=".controller.activities.MainActivity"

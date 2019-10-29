@@ -106,4 +106,25 @@
     <string name="notification_channel_name" translatable="false">restaurant_notification</string>
     <string name="notification_channel_description" translatable="false">handle notification restaurant</string>
 
+    <!-- SETTINGS -->
+    <string name="settings_title_notification">Notification</string>
+    <string name="settings_title_delete_account">Delete my account</string>
+    <string name="settings_category_account">Account</string>
+    <string name="settings_category_notification">Notification</string>
+    <string name="tag_time_picker" translatable="false">Time picker</string>
+    <string name="alert_dialog_delete_account_title">Delete your account</string>
+    <string name="alert_dialog_delete_account_btn_delete">Delete</string>
+    <string name="alert_dialog_delete_account_btn_return">Return</string>
+    <string name="alert_dialog_delete_account_summary">Your account will be permanently deleted!</string>
+    <string name="msg_account_deleted">Account deleted</string>
+    <string name="settings_summary_notification">Allow device to send a notification.</string>
+    <string name="settings_summary_time">Change the time the notification is sent.</string>
+    <string name="settings_summary_delete_account">This action is not reversible.</string>
+    <string name="failure_email_password">Failure in email/password</string>
+    <string name="afl_delete_user">Failure to delete the user</string>
+    <string name="rnn_context_cannot_be_null" translatable="false">The context cannot be null.</string>
+    <string name="password">password</string>
+    <string name="email">email</string>
+    <string name="champ_empty">Empty fields…</string>
+
 </resources>
