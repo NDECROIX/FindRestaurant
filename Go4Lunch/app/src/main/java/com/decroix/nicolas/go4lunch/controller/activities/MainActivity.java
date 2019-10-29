@@ -2,6 +2,7 @@ package com.decroix.nicolas.go4lunch.controller.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -22,12 +24,18 @@ import androidx.fragment.app.FragmentManager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
+import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.controller.fragments.ChatFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.ListViewFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.MapViewFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.WorkmatesFragment;
+import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
 import com.decroix.nicolas.go4lunch.view.AutocompleteRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.RestaurantRecyclerViewAdapter;
+import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,7 +45,8 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener,
+MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener {
 
     //------------
     // VIEW
@@ -68,6 +77,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private Fragment activeFragment = mapViewFragment;
 
     public Location mLastKnownLocation;
+    private boolean notificationCaller;
 
     /**
      * Create a intent of this activity
@@ -125,7 +135,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             mHeaderViewHolder.mName.setText(getCurrentUser().getDisplayName());
             mHeaderViewHolder.mEmail.setText(getCurrentUser().getEmail());
         }
+        if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
+            displayUsersRestaurant();
+            notificationCaller = true;
+        }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -240,7 +255,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.activity_main_drawer_lunch:
-                // start detail activity;
+                displayUsersRestaurant();
                 break;
             case R.id.activity_main_drawer_settings:
                 // start setting activity;
@@ -266,6 +281,68 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         activeFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    /**
+     * Get and start the detail activity with the restaurant of the user
+     */
+    private void displayUsersRestaurant() {
+        PlacesClientHelper placesClientHelper = new PlacesClientHelper(this);
+        // Get user data from firestore
+        UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(resultUser -> {
+            if (resultUser != null) {
+                User user = resultUser.toObject(User.class);
+                if  (user != null && user.getLunchRestaurantID() != null){
+                    // Get place detail from the Google place api
+                    placesClientHelper.getPlaceDetails(user.getLunchRestaurantID())
+                            .addOnSuccessListener(place -> {
+                                if (place != null) {
+                                    Place myPlace = place.getPlace();
+                                    if (myPlace.getPhotoMetadatas() != null) {
+                                        // Get the restaurant picture if exist
+                                        placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0))
+                                                .addOnSuccessListener(fetchPhotoResponse -> {
+                                                    if (fetchPhotoResponse != null)
+                                                        startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
+                                                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                                    }else {
+                                        startDetailActivity(myPlace, null);
+                                    }
+                                }
+                            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+                } else {
+                    showMessage(getString(R.string.not_yet_chosen));
+                }
+            }
+        });
+    }
+
+    /**
+     * Start the activity DetailActivity
+     * @param place restaurant
+     * @param bitmap restaurant's picture
+     */
+    private void startDetailActivity(Place place, Bitmap bitmap){
+        startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
+    }
+
+    @Override
+    public void onClickRestaurantMarker(Place restaurant, Bitmap bitmap) {
+        startDetailActivity(restaurant, bitmap);
+    }
+
+    @Override
+    public void onClickRestaurant(Place place, Bitmap bitmap) {
+        startDetailActivity(place, bitmap);
+    }
+
+    /**
+     * Update the last known location
+     * @param mLastKnownLocation actual location
+     */
+    @Override
+    public void updateLastKnowLocation(Location mLastKnownLocation) {
+        this.mLastKnownLocation = mLastKnownLocation;
     }
 
     class HeaderViewHolder {

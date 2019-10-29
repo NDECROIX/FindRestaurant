@@ -20,7 +20,8 @@
     <!-- USER ACTION CANCELED -->
     <string name="uac_connection_cancelled">Connection cancelled.</string>
 
-    <!-- MAIN ACTIVITY LAYOUT -->
+    <!-- MAIN ACTIVITY -->
+    <string name="not_yet_chosen">You have not yet chosen!</string>
     <string name="icd_background_picture" translatable="false">background picture</string>
     <string name="dummy_text_go_for_lunch">Go4Lunch</string>
     <string name="idc_nav_header_avatar_picture" translatable="false">avatar picture</string>
