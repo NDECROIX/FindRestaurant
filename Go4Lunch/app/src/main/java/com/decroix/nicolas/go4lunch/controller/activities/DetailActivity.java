@@ -1,11 +1,5 @@
 package com.decroix.nicolas.go4lunch.controller.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -15,6 +9,11 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.decroix.nicolas.go4lunch.R;
@@ -42,6 +41,10 @@ import butterknife.OnClick;
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getDistance;
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours;
 
+/**
+ * Display the restaurant detail passed in the Intent.
+ * Manages the registration of a user And shows the registered users on the restaurant
+ */
 public class DetailActivity extends BaseActivity {
 
     @BindView(R.id.activity_detail_toolbar)
@@ -101,7 +104,7 @@ public class DetailActivity extends BaseActivity {
      */
     private void getUserFromFirestore() {
         UserHelper.getUser(getCurrentUserID()).addOnCompleteListener(doc -> {
-            if (doc.isSuccessful() && doc.getResult() != null){
+            if (doc.isSuccessful() && doc.getResult() != null) {
                 myUser = doc.getResult().toObject(User.class);
             }
             displayPlaceDetails();
@@ -127,6 +130,7 @@ public class DetailActivity extends BaseActivity {
 
     /**
      * Update the color of the floating action button
+     *
      * @param users Users registered on the restaurant
      */
     private void updateFAB(List<User> users) {
@@ -141,6 +145,7 @@ public class DetailActivity extends BaseActivity {
 
     /**
      * Config the recycler view with the user list
+     *
      * @param users User list
      */
     private void configRecyclerView(List<User> users) {
@@ -161,7 +166,7 @@ public class DetailActivity extends BaseActivity {
      * Handle the click on the website button.
      */
     @OnClick(R.id.detail_activity_web_btn)
-    public void openTheRestaurantWebsite(){
+    public void openTheRestaurantWebsite() {
         if (placesClientHelper == null) {
             placesClientHelper = new PlacesClientHelper(this);
         }
@@ -181,8 +186,8 @@ public class DetailActivity extends BaseActivity {
      * Handle the click on the like button
      */
     @OnClick(R.id.detail_activity_like_btn)
-    public void likeRestaurantBtn(){
-        if (!myUser.getFavouritePlaceID().contains(placeRestaurant.getId())){
+    public void likeRestaurantBtn() {
+        if (!myUser.getFavouritePlaceID().contains(placeRestaurant.getId())) {
             UserHelper.addRestaurantToFavorites(getCurrentUserID(), placeRestaurant.getId())
                     .addOnSuccessListener(task ->
                             showMessage(placeRestaurant.getName() + getString(R.string.restaurant_added_to_the_favorites)))
@@ -196,7 +201,7 @@ public class DetailActivity extends BaseActivity {
      * Handle the click on the call button
      */
     @OnClick(R.id.detail_activity_btn_call)
-    public void callRestaurantBtn(){
+    public void callRestaurantBtn() {
         if (placesClientHelper == null) {
             placesClientHelper = new PlacesClientHelper(this);
         }
@@ -215,6 +220,7 @@ public class DetailActivity extends BaseActivity {
 
     /**
      * Open the call interface
+     *
      * @param phoneNumber restaurant phone
      */
     private void callRestaurant(@NonNull String phoneNumber) {
@@ -225,13 +231,9 @@ public class DetailActivity extends BaseActivity {
 
     /**
      * Add the restaurant for lunch.
-     * Update the profile user in the database.
-     * Add the user in the users list.
-     * Delete the user from the last restaurant if exist
      */
     private void addRestaurantForLunch() {
-
-        if (!myUser.getLunchRestaurantID().equals(placeRestaurant.getId())){
+        if (!myUser.getLunchRestaurantID().equals(placeRestaurant.getId())) {
             if (myUser.getLunchRestaurantID() != null && !myUser.getLunchRestaurantID().isEmpty()) {
                 //Remove user from users list
                 RestaurantHelper.removeUserFromList(myUser.getLunchRestaurantID(), myUser)
@@ -244,19 +246,27 @@ public class DetailActivity extends BaseActivity {
                 UserHelper.updateLunchRestaurant(FirebaseAuth.getInstance().getUid(), new Restaurant(placeRestaurant))
                         .addOnFailureListener(this.onFailureListener(getString(R.string.afl_update_lunch_restaurant)));
             }
-
-            // Check if the restaurant exist in the database else if create it.
-            RestaurantHelper.getRestaurant(placeRestaurant.getId()).addOnCompleteListener(snapshotTask -> {
-                if (snapshotTask.isSuccessful() && snapshotTask.getResult() != null) {
-                    addUserInWorkmateList();
-                } else {
-                    Restaurant newRestaurant = new Restaurant(this.placeRestaurant);
-                    RestaurantHelper.createRestaurant(newRestaurant).addOnCompleteListener(task1 -> addUserInWorkmateList());
-                }
-            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_restaurant)));
+            checkRestaurantExist();
         } else {
             showMessage(getString(R.string.restaurant_already_added));
         }
+    }
+
+    /**
+     * Check if the current restaurant exists else create it
+     */
+    private void checkRestaurantExist() {
+        RestaurantHelper.getRestaurant(placeRestaurant.getId()).addOnCompleteListener(snapshotTask -> {
+            if (snapshotTask.isSuccessful() && snapshotTask.getResult() != null &&
+                    snapshotTask.getResult().exists()) {
+                addUserInWorkmateList();
+            } else {
+                Restaurant newRestaurant = new Restaurant(this.placeRestaurant);
+                RestaurantHelper.createRestaurant(newRestaurant)
+                        .addOnCompleteListener(task1 -> addUserInWorkmateList())
+                        .addOnFailureListener(this.onFailureListener(getString(R.string.afl_create_restaurant)));
+            }
+        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_restaurant)));
     }
 
     /**
@@ -269,7 +279,7 @@ public class DetailActivity extends BaseActivity {
                     getUserFromFirestore();
                     createAlarmDaily();
                 })
-                .addOnFailureListener(this.onFailureListener(getString(R.string.afl_add_user_in_list)));
+                .addOnFailureListener(onFailureListener(getString(R.string.afl_add_user_in_list)));
     }
 
     /**
@@ -302,7 +312,7 @@ public class DetailActivity extends BaseActivity {
 
             if (getSupportActionBar() != null
                     && placeRestaurant.getOpeningHours() != null
-                    && placeRestaurant.getLatLng() != null){
+                    && placeRestaurant.getLatLng() != null) {
                 getSupportActionBar()
                         .setTitle(getOpeningHours(placeRestaurant.getOpeningHours()));
             }

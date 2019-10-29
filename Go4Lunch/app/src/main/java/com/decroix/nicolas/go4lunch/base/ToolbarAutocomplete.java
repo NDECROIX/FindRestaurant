@@ -106,11 +106,13 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
             toolbarViewHolder.searchView.setVisibility(View.VISIBLE);
         }
         if (!visibility && mLastKnownLocation != null) {
+            toolbarViewHolder.searchEditText.setHint(R.string.search_view_hint_restaurants);
             toolbarViewHolder.searchViewRc.setVisibility(View.VISIBLE);
             toolbarViewHolder.searchViewRc.bringToFront();
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 0);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_autocomplete_search_toolbar));
         } else {
+            toolbarViewHolder.searchEditText.setHint(R.string.search_view_hint_workmates);
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 10);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_search_toolbar));
         }
