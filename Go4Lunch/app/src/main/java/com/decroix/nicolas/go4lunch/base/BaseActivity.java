@@ -11,6 +11,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
+    public static final String EXTRA_CALLER = "caller";
+
     /**
      * Get the current user logged
      * @return Firebase user
