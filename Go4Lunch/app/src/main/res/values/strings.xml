@@ -132,5 +132,8 @@
     <string name="icd_picture_sent" translatable="false">picture_sent</string>
     <string name="icd_button_add_image" translatable="false">button add image</string>
     <string name="icd_button_send_message" translatable="false">button send message</string>
+    <string name="afl_create_message">Failure when creating the message</string>
+    <string name="afl_put_fil_on_firebase_storage">Failure during data reporting</string>
+    <string name="uac_no_image_chosen">No image chosen !</string>
 
 </resources>
