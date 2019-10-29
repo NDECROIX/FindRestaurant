@@ -26,4 +26,10 @@
 
     <!-- Toolbar style -->
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
+
+    <!-- Date time picker style -->
+    <style name="dateTimePicker" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+
 </resources>
