@@ -4,6 +4,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.decroix.nicolas.go4lunch.R;
@@ -16,6 +18,15 @@ public class SettingsActivity extends AppCompatActivity {
 
     @BindView(R.id.settings_toolbar)
     Toolbar settingsToolbar;
+
+    /**
+     * Create an intent of this activity
+     * @param context Context to launch this activity
+     * @return SettingsActivity intent
+     */
+    public static Intent newIntent(Context context){
+        return new Intent(context, SettingsActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
