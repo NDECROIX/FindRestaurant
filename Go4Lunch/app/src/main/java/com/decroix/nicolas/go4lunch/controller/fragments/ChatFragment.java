@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.view.ChatRecyclerViewAdapter;
@@ -47,6 +48,8 @@ public class ChatFragment extends BaseFragment {
     TextView chatIsEmpty;
 
     private ChatRecyclerViewAdapter adapter;
+    private User currentUser;
+    private FirebaseAuth mAuth;
 
     public ChatFragment() {
         // Required empty public constructor
@@ -56,6 +59,8 @@ public class ChatFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        getCurrentUserFirestore();
     }
 
     @Override
@@ -86,5 +91,19 @@ public class ChatFragment extends BaseFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new ChatRecyclerViewAdapter(getCurrentUserID());
         recyclerView.setAdapter(adapter);
+    }
+
+    /**
+     * Get the user data from firestore
+     */
+    private void getCurrentUserFirestore() {
+        if (mAuth.getCurrentUser() == null) {
+            return;
+        }
+        UserHelper.getUser(mAuth.getCurrentUser().getUid()).addOnSuccessListener(task -> {
+            if (task != null) {
+                currentUser = task.toObject(User.class);
+            }
+        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
     }
 }
