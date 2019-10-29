@@ -58,4 +58,27 @@ public class UsefulFunctions {
         return (float) (ratingPlace - 2);
     }
 
+    /**
+     * Convert date to date format E HH:mm
+     * @param date date of the message
+     * @return date formatted
+     */
+    public static String convertDateToHour(Date date) {
+        if (date == null) {
+            return "";
+        }
+        DateFormat dfTime = new SimpleDateFormat(" E HH:mm", Locale.FRANCE);
+        return dfTime.format(date);
+    }
+
+    /**
+     * Calculate color on the user id between range
+     * @param userID user id
+     * @return the final color
+     */
+    public static int getColor(String userID) {
+        int color = userID.hashCode() % 255;
+        return Color.argb(255, color, 200, color);
+    }
+
 }
