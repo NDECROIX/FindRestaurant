@@ -56,6 +56,6 @@
         app:borderWidth="2dp"
         android:src="@drawable/ic_check_circle_24"/>
 
-    <include layout="@layout/content_detail" />
+    <include layout="@layout/activity_detail_content" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

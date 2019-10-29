@@ -31,7 +31,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/search_autocomplete_pbg"
-        tools:listitem="@layout/toolbar_search_autocomplete_item"/>
+        tools:listitem="@layout/activity_main_toolbar_search_autocomplete_item"/>
 
     <TextView
         android:id="@+id/search_autocomplete_pbg"

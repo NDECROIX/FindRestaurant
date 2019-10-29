@@ -148,7 +148,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/detail_activity_container_btn"
-            tools:listitem="@layout/detail_activity_item" />
+            tools:listitem="@layout/activity_detail_item" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
