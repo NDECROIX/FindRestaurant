@@ -17,7 +17,6 @@ import androidx.preference.SwitchPreferenceCompat;
 
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -98,7 +97,41 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        return false;
+        switch (preference.getKey()) {
+            case KEY_NOTIFICATION_PREFERENCE:
+                updateStatusNotification(newValue);
+                break;
+            case KEY_NOTIFICATION_TIME_PREFERENCE:
+                updateNotificationTime(newValue);
+                break;
+        }
+        return true;
+    }
+
+    /**
+     * Change the time at which the notification should be displayed
+     * @param newValue New time
+     */
+    private void updateNotificationTime(Object newValue) {
+        if (newValue instanceof String) {
+            notificationHelper.createAlarmDaily();
+            Toast.makeText(getContext(), R.string.notification_time_update, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Handle the activation of the notification
+     * @param activation false to disable
+     */
+    private void updateStatusNotification(Object activation) {
+        if (activation instanceof Boolean && getContext() != null) {
+            boolean status = (boolean) activation;
+            if (status) {
+                notificationHelper.createAlarmDaily();
+            } else {
+                notificationHelper.disableNotification();
+            }
+        }
     }
 
     /**
