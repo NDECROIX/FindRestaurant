@@ -25,7 +25,15 @@
                 android:value="com.decroix.nicolas.go4lunch.controller.activities.MainActivity" />
         </activity>
         <receiver android:name=".receiver.AlarmReceiver" />
-        <activity android:name=".controller.activities.DetailActivity" />
+        <activity
+            android:name=".controller.activities.DetailActivity"
+            android:label="@string/title_activity_detail"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".controller.activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.decroix.nicolas.go4lunch.controller.activities.MainActivity" />
+        </activity>
         <activity android:name=".controller.activities.AuthActivity" />
         <activity
             android:name=".controller.activities.MainActivity"

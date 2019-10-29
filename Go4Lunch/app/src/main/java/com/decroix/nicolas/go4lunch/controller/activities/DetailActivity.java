@@ -92,9 +92,8 @@ public class DetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
-        getUserFromFirestore();
         configToolbar();
-        displayPlaceDetails();
+        getUserFromFirestore();
     }
 
     /**
@@ -105,6 +104,7 @@ public class DetailActivity extends BaseActivity {
             if (doc.isSuccessful() && doc.getResult() != null){
                 myUser = doc.getResult().toObject(User.class);
             }
+            displayPlaceDetails();
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
     }
 
