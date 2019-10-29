@@ -4,27 +4,28 @@ package com.decroix.nicolas.go4lunch.controller.fragments;
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
-import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
+import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.WorkmatesRecyclerViewAdapter;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -39,8 +40,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.decroix.nicolas.go4lunch.api.UserHelper.getUsers;
-
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -54,6 +53,11 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
     private List<User> users;
 
     private Location myLocation;
+
+    /**
+     * Required to test the recycler view
+     */
+    private TestRecyclerView callbackTest;
 
     public WorkmatesFragment() {
         // Required empty public constructor
@@ -114,6 +118,10 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
      */
     private void loadUsersList(List<User> users){
         adapter.updateUsersList(users);
+        if (callbackTest != null && adapter.getItemCount() > 0) {
+            callbackTest.recyclerViewHaveData();
+            callbackTest = null;
+        }
     }
 
     @Override
@@ -145,12 +153,12 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
                             .build();
 
                     placesClient
-                            .fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->{
-                                // Start detail activity
-                            })
+                            .fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
+                                startActivity(DetailActivity
+                                        .newIntent(getContext(), place, fetchPhotoResponse.getBitmap(), myLocation)))
                             .addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
                 } else {
-                    // Start detail activity
+                    startActivity(DetailActivity.newIntent(getContext(), place, null, myLocation));
                 }
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
@@ -181,5 +189,18 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
     @Override
     public void afterTextChanged(Editable editable) {
+    }
+
+    /**
+     * Required to test the recycler view
+     * @param callbackTest callback on IdlingResource
+     */
+    @VisibleForTesting
+    void registerOnCallBackTest(TestRecyclerView callbackTest) {
+        if (adapter.getItemCount() > 0){
+            callbackTest.recyclerViewHaveData();
+        } else {
+            this.callbackTest = callbackTest;
+        }
     }
 }
