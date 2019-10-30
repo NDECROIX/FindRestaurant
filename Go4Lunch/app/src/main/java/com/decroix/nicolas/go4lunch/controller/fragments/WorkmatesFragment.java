@@ -50,8 +50,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
     private WorkmatesRecyclerViewAdapter adapter;
     private PlacesClient placesClient;
-    private List<User> users;
-
+    private List<User> myWorkmates;
     private Location myLocation;
 
     /**
@@ -68,7 +67,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
         super.onCreate(savedInstanceState);
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
-        users = new ArrayList<>();
+        myWorkmates = new ArrayList<>();
     }
 
     @Override
@@ -78,27 +77,25 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
         View view = inflater.inflate(R.layout.fragment_workmates, container, false);
         ButterKnife.bind(this, view);
         configRecyclerView();
-        getUsers();
+        getWorkmates();
         return view;
     }
 
     /**
-     * Get all users from firestore
+     * Get all myWorkmates from firestore
      */
-    private void getUsers() {
-        UserHelper.getUsers().addOnCompleteListener( task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                List<DocumentSnapshot> documents = task.getResult().getDocuments();
-                List<User> users = new ArrayList<>();
-                for (DocumentSnapshot document : documents) {
-                    User user = document.toObject(User.class);
-                    if (user != null && !user.getUid().equals(getCurrentUserID())){
-                        users.add(document.toObject(User.class));
-                    }
+    private void getWorkmates() {
+        UserHelper.getUsers().addOnSuccessListener(response -> {
+            List<DocumentSnapshot> documents = response.getDocuments();
+            List<User> users = new ArrayList<>();
+            for (DocumentSnapshot document : documents) {
+                User user = document.toObject(User.class);
+                if (user != null && !user.getUid().equals(getCurrentUserID())) {
+                    users.add(document.toObject(User.class));
                 }
-                loadUsersList(users);
-                this.users.addAll(adapter.getUsers());
             }
+            loadUsersList(users);
+            myWorkmates.addAll(users);
         });
     }
 
@@ -113,10 +110,11 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
     }
 
     /**
-     * Add all users in the recycler view
-     * @param users users
+     * Add all myWorkmates in the recycler view
+     *
+     * @param users myWorkmates
      */
-    private void loadUsersList(List<User> users){
+    private void loadUsersList(List<User> users) {
         adapter.updateUsersList(users);
         if (callbackTest != null && adapter.getItemCount() > 0) {
             callbackTest.recyclerViewHaveData();
@@ -137,6 +135,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
     /**
      * Get details of the restaurant whose ID is passed in parameter
+     *
      * @param id restaurant id
      */
     private void getPlaceDetails(String id) {
@@ -154,11 +153,11 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
                     placesClient
                             .fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
-                                startActivity(DetailActivity
-                                        .newIntent(getContext(), place, fetchPhotoResponse.getBitmap(), myLocation)))
+                            startActivity(DetailActivity
+                                    .newIntent(getContext(), place, fetchPhotoResponse.getBitmap())))
                             .addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
                 } else {
-                    startActivity(DetailActivity.newIntent(getContext(), place, null, myLocation));
+                    startActivity(DetailActivity.newIntent(getContext(), place, null));
                 }
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
@@ -177,13 +176,13 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
         String text = charSequence.toString().toLowerCase();
         adapter.clearUsers();
         if (!text.isEmpty()) {
-            for (User user : users) {
+            for (User user : myWorkmates) {
                 if (user.getUsername().toLowerCase().contains(text)) {
                     adapter.addUser(user);
                 }
             }
         } else {
-            adapter.updateUsersList(users);
+            adapter.updateUsersList(myWorkmates);
         }
     }
 
@@ -193,11 +192,12 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
     /**
      * Required to test the recycler view
+     *
      * @param callbackTest callback on IdlingResource
      */
     @VisibleForTesting
     void registerOnCallBackTest(TestRecyclerView callbackTest) {
-        if (adapter.getItemCount() > 0){
+        if (adapter.getItemCount() > 0) {
             callbackTest.recyclerViewHaveData();
         } else {
             this.callbackTest = callbackTest;

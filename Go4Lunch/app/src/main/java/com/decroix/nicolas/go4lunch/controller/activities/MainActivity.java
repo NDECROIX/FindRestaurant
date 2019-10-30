@@ -16,10 +16,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
-import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.controller.fragments.ChatFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.ListViewFragment;
@@ -30,6 +30,7 @@ import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.holders.HeaderViewHolder;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -76,8 +77,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private boolean notificationCaller;
 
+    private User myUser;
+
     /**
      * Create a intent of this activity
+     *
      * @param context Application context
      * @return The intent
      */
@@ -102,10 +106,20 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private void configView() {
         startFragment();
+        configViewModel();
         configToolbar();
         configBottomView();
         configDrawerLayout();
         configNavigationView();
+    }
+
+    /**
+     * Handles ViewModel data
+     */
+    private void configViewModel() {
+        ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
+        model.getMyUser(getCurrentUserID()).observe(this, user -> myUser = user);
+        model.getMyLocation(this, false).observe(this, location -> mLastKnownLocation = location);
     }
 
     /**
@@ -294,31 +308,25 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private void displayUsersRestaurant() {
         PlacesClientHelper placesClientHelper = new PlacesClientHelper(this);
-        // Get user data from firestore
-        UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(resultUser -> {
-            if (resultUser != null) {
-                User user = resultUser.toObject(User.class);
-                if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
-                    // Get place detail from the Google place api
-                    placesClientHelper.getPlaceDetails(user.getLunchRestaurantID()).addOnSuccessListener(place -> {
-                        if (place != null) {
-                            Place myPlace = place.getPlace();
-                            if (myPlace.getPhotoMetadatas() != null) {
-                                // Get the restaurant picture if exist
-                                placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0)).addOnSuccessListener(fetchPhotoResponse -> {
-                                    if (fetchPhotoResponse != null)
-                                        startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
-                                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                            } else {
-                                startDetailActivity(myPlace, null);
-                            }
-                        }
-                    }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
-                } else {
-                    showMessage(getString(R.string.not_yet_chosen));
+        if (myUser != null && myUser.getLunchRestaurantID() != null && !myUser.getLunchRestaurantID().isEmpty()) {
+            // Get place detail from the Google place api
+            placesClientHelper.getPlaceDetails(myUser.getLunchRestaurantID()).addOnSuccessListener(place -> {
+                if (place != null) {
+                    Place myPlace = place.getPlace();
+                    if (myPlace.getPhotoMetadatas() != null) {
+                        // Get the restaurant picture if exist
+                        placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0)).addOnSuccessListener(fetchPhotoResponse -> {
+                            if (fetchPhotoResponse != null)
+                                startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
+                        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                    } else {
+                        startDetailActivity(myPlace, null);
+                    }
                 }
-            }
-        }).addOnFailureListener(onFailureListener(getString(R.string.afl_get_user)));
+            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+        } else {
+            showMessage(getString(R.string.not_yet_chosen));
+        }
     }
 
     /**
@@ -328,7 +336,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * @param bitmap restaurant's picture
      */
     private void startDetailActivity(Place place, Bitmap bitmap) {
-        startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
+        startActivity(DetailActivity.newIntent(this, place, bitmap));
     }
 
     @Override
@@ -339,15 +347,5 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void onClickRestaurant(Place place, Bitmap bitmap) {
         startDetailActivity(place, bitmap);
-    }
-
-    /**
-     * Update the last known location
-     *
-     * @param mLastKnownLocation actual location
-     */
-    @Override
-    public void updateLastKnowLocation(Location mLastKnownLocation) {
-        this.mLastKnownLocation = mLastKnownLocation;
     }
 }

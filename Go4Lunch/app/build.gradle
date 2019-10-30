@@ -90,4 +90,7 @@ dependencies {
     //GLIDE
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+
+    //LIFECYCLE
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
 }

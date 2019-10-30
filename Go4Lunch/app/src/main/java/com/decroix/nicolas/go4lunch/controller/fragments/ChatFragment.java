@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,13 +31,12 @@ import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.MessageHelper;
 import com.decroix.nicolas.go4lunch.api.StorageHelper;
-import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseFragment;
 import com.decroix.nicolas.go4lunch.models.Message;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.ChatRecyclerViewAdapter;
-import com.google.firebase.auth.FirebaseAuth;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 
 import java.util.List;
 import java.util.UUID;
@@ -73,7 +73,6 @@ public class ChatFragment extends BaseFragment {
 
     private ChatRecyclerViewAdapter adapter;
     private User currentUser;
-    private FirebaseAuth mAuth;
     private InputMethodManager inputMethodManager;
     private Uri uriImageSelected;
 
@@ -90,8 +89,7 @@ public class ChatFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAuth = FirebaseAuth.getInstance();
-        getCurrentUserFirestore();
+        getCurrentUser();
         inputMethodManager = (InputMethodManager) getFragmentContext().getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 
@@ -127,17 +125,11 @@ public class ChatFragment extends BaseFragment {
     }
 
     /**
-     * Get the user data from firestore
+     * Get the user data from the ViewModel
      */
-    private void getCurrentUserFirestore() {
-        if (mAuth.getCurrentUser() == null) {
-            return;
-        }
-        UserHelper.getUser(mAuth.getCurrentUser().getUid()).addOnSuccessListener(task -> {
-            if (task != null) {
-                currentUser = task.toObject(User.class);
-            }
-        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
+    private void getCurrentUser() {
+        ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
+        model.getMyUser(getCurrentUserID()).observe(this, user -> currentUser = user);
     }
 
     /**

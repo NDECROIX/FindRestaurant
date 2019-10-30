@@ -5,6 +5,10 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,14 +16,10 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
@@ -29,18 +29,13 @@ import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.Task;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -74,6 +69,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     private PlacesClient placesClient;
     private RestaurantRecyclerViewAdapter adapter;
     private RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener callback;
+    private ShareDataViewModel model;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -125,6 +121,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         super.onCreate(savedInstanceState);
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
+        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
     }
 
     @Override
@@ -137,15 +134,11 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      * Get the last known location
      */
     private void getCurrentLocation() {
-        LocationServices.getFusedLocationProviderClient(getFragmentContext())
-                .getLastLocation()
-                .addOnSuccessListener(result -> {
-                    if (result != null) {
-                        adapter.setMyLocation(result);
-                        adapter.clearList();
-                        getCurrentRestaurants();
-                    }
-                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_location)));
+        model.getMyLocation(getFragmentContext(), false).observe(this, location -> {
+            adapter.setMyLocation(location);
+            adapter.clearList();
+            getCurrentRestaurants();
+        });
     }
 
     /**
@@ -153,35 +146,8 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      */
     @AfterPermissionGranted(PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
     private void getCurrentRestaurants() {
-        List<String> placesID = new ArrayList<>();
-
-        // Use the builder to create a FindCurrentPlaceRequest.
-        FindCurrentPlaceRequest request = FindCurrentPlaceRequest.builder(PLACES_FIELDS).build();
-
-        // Call findCurrentPlace and handle the response (first check that the user has granted permission).
-        if (ContextCompat.checkSelfPermission(getFragmentContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Task<FindCurrentPlaceResponse> placeResponse = placesClient.findCurrentPlace(request);
-            placeResponse.addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    FindCurrentPlaceResponse response = task.getResult();
-                    if (response != null && !response.getPlaceLikelihoods().isEmpty()) {
-                        textViewIsEmpty.setVisibility(View.GONE);
-                        for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
-                            List<Place.Type> placeType = placeLikelihood.getPlace().getTypes();
-                            if (placeType != null && placeType.contains(Place.Type.RESTAURANT)) {
-                                placesID.add(placeLikelihood.getPlace().getId());
-                            }
-                        }
-                        if (!placesID.isEmpty()) {
-                            getRestaurantDetails(placesID);
-                        }
-                    } else {
-                        textViewIsEmpty.setVisibility(View.VISIBLE);
-                    }
-                } else {
-                    showMessage(getString(R.string.error_unknown_error));
-                }
-            });
+        if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
+            model.getMyPlaces(placesClient, false).observe(this, this::getRestaurantDetails);
         } else {
             getLocationPermission();
         }
@@ -191,27 +157,32 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      * retrieve the details of each restaurant passed in parameter
      * @param placesId restaurants
      */
-    private void getRestaurantDetails(@NonNull List<String> placesId) {
+    private void getRestaurantDetails(List<Place> placesId) {
+        if (placesId == null) {
+            return;
+        }
+        for (Place placeId : placesId) {
+            if (placeId != null && placeId.getId() != null) {
+                FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId.getId(), PLACE_FIELDS);
 
-        for (String placeId : placesId) {
-            FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId, PLACE_FIELDS);
+                placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+                    Place place = response.getPlace();
 
-            placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
-                Place place = response.getPlace();
+                    if (place.getPhotoMetadatas() != null) {
+                        FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
+                                .setMaxWidth(500)
+                                .setMaxHeight(250)
+                                .build();
 
-                if (place.getPhotoMetadatas() != null) {
-                    FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
-                            .setMaxWidth(500)
-                            .setMaxHeight(250)
-                            .build();
+                        placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) ->
+                                countWorkmates(place, fetchPhotoResponse.getBitmap()))
+                                .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
+                    } else {
+                        countWorkmates(place, null);
+                    }
+                }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
 
-                    placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) ->
-                            countWorkmates(place, fetchPhotoResponse.getBitmap()))
-                            .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                } else {
-                    countWorkmates(place, null);
-                }
-            }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
+            }
         }
     }
 
@@ -268,7 +239,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         FetchPlaceRequest request = FetchPlaceRequest.newInstance(restaurant.getPlaceID(), PLACES_FIELDS);
         placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
             Place place = response.getPlace();
-            getRestaurantDetails(Collections.singletonList(place.getId()));
+            getRestaurantDetails(Collections.singletonList(place));
         }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
     }
 

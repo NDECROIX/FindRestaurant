@@ -155,5 +155,6 @@
     <string name="failure_email_password">Failure in email/password</string>
     <string name="champ_empty">Empty fields…</string>
     <string name="afl_create_restaurant">Error when creating the restaurant</string>
+    <string name="activity_detail_distance">Distance :\u0020</string>
 
 </resources>

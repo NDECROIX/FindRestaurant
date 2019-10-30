@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -22,9 +23,13 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.utils.DeleteAccountHelper;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -45,6 +50,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private Preference notificationTime;
     private Context context;
     private NotificationHelper notificationHelper;
+    private User myUser;
+    private FirebaseUser firebaseUser;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -60,8 +67,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
         notificationHelper = new NotificationHelper(context);
+        getCurrentUser();
         getPreference();
         configListener();
+    }
+
+    /**
+     * Get the user data from the ViewModel
+     */
+    private void getCurrentUser() {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null){
+            ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
+            model.getMyUser(firebaseUser.getUid()).observe(this, user -> myUser = user);
+        }
     }
 
     /**
@@ -176,7 +196,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                     String email = editTextEmail.getText().toString();
                     if (!email.isEmpty() && !password.isEmpty()) {
                         DeleteAccountHelper deleteAccountHelper = new DeleteAccountHelper(this);
-                        deleteAccountHelper.deleteAccount(getContext(), email, password);
+                        deleteAccountHelper.deleteAccount(getContext(), myUser, firebaseUser, email, password);
                         dialogInterface.dismiss();
                     } else {
                         Toast.makeText(context, R.string.champ_empty, Toast.LENGTH_SHORT).show();

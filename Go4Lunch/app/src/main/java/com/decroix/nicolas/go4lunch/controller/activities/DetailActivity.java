@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +26,7 @@ import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
 import com.decroix.nicolas.go4lunch.view.adapters.DetailActivityRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -57,6 +59,8 @@ public class DetailActivity extends BaseActivity {
     RatingBar restaurantRating;
     @BindView(R.id.detail_activity_address)
     TextView restaurantAddress;
+    @BindView(R.id.detail_activity_distance)
+    TextView restaurantDistance;
     @BindView(R.id.detail_activity_recycler_view)
     RecyclerView recyclerView;
     @BindView(R.id.activity_detail_fab)
@@ -64,11 +68,12 @@ public class DetailActivity extends BaseActivity {
 
     private static final String RESTAURANT = "placeRestaurant";
     private static final String RESTAURANT_BITMAP = "restaurant_bitmap";
-    private static final String MY_LOCATION = "my_location";
 
     private Place placeRestaurant;
     private User myUser;
+    private Location myLocation;
     private PlacesClientHelper placesClientHelper;
+    private ShareDataViewModel model;
 
     /**
      * Create an intent of this class
@@ -78,10 +83,9 @@ public class DetailActivity extends BaseActivity {
      * @param bitmap     Image of the restaurant if exist else null
      * @return Intent
      */
-    public static Intent newIntent(Context context, Place restaurant, @Nullable Bitmap bitmap, Location myLocation) {
+    public static Intent newIntent(Context context, Place restaurant, @Nullable Bitmap bitmap) {
         Bundle bundle = new Bundle();
         bundle.putParcelable(RESTAURANT, restaurant);
-        bundle.putParcelable(MY_LOCATION, myLocation);
         if (bitmap != null) {
             bundle.putParcelable(RESTAURANT_BITMAP, bitmap);
         }
@@ -96,19 +100,17 @@ public class DetailActivity extends BaseActivity {
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
         configToolbar();
-        getUserFromFirestore();
+        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
+        getUserFromViewModel();
+        displayPlaceDetails();
     }
 
     /**
-     * Get data user's from firestore
+     * Get data user's from ViewModel
      */
-    private void getUserFromFirestore() {
-        UserHelper.getUser(getCurrentUserID()).addOnCompleteListener(doc -> {
-            if (doc.isSuccessful() && doc.getResult() != null) {
-                myUser = doc.getResult().toObject(User.class);
-            }
-            displayPlaceDetails();
-        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
+    private void getUserFromViewModel() {
+        model.getMyUser(getCurrentUserID()).observe(this, user -> myUser = user);
+        model.getMyLocation(this, false).observe(this, location -> myLocation = location);
     }
 
     /**
@@ -276,7 +278,6 @@ public class DetailActivity extends BaseActivity {
         RestaurantHelper.addUserInList(placeRestaurant.getId(), myUser)
                 .addOnSuccessListener(result -> {
                     fab.setImageResource(R.drawable.ic_check_circle_dark_24);
-                    getUserFromFirestore();
                     createAlarmDaily();
                 })
                 .addOnFailureListener(onFailureListener(getString(R.string.afl_add_user_in_list)));
@@ -307,7 +308,6 @@ public class DetailActivity extends BaseActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             this.placeRestaurant = bundle.getParcelable(RESTAURANT);
-            Location myLocation = bundle.getParcelable(MY_LOCATION);
             Bitmap restaurantBitmap = bundle.getParcelable(RESTAURANT_BITMAP);
 
             if (getSupportActionBar() != null
@@ -319,10 +319,9 @@ public class DetailActivity extends BaseActivity {
 
             restaurantTitle.setText(placeRestaurant.getName());
             restaurantAddress.setText(placeRestaurant.getAddress());
-            restaurantAddress.append(" ");
             if (myLocation != null && placeRestaurant.getLatLng() != null) {
                 LatLng myLatLong = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                restaurantAddress.append(getDistance(placeRestaurant.getLatLng(), myLatLong));
+                restaurantDistance.append(getDistance(placeRestaurant.getLatLng(), myLatLong));
             }
             if (placeRestaurant.getRating() != null) {
                 float rating = (float) (placeRestaurant.getRating() - 2);

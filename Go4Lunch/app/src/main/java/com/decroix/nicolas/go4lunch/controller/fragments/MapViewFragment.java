@@ -4,18 +4,17 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.location.Location;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
@@ -23,7 +22,7 @@ import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
-import com.google.android.gms.location.LocationServices;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,14 +33,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
-import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -65,7 +60,6 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     public interface MapViewFragmentInterface {
         void onClickRestaurantMarker(Place restaurant, @Nullable Bitmap bitmap);
-        void updateLastKnowLocation(Location mLastKnownLocation);
     }
 
     @BindView(R.id.fragment_map_view_fab)
@@ -78,7 +72,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     private GoogleMap mMap;
     private MapViewFragmentInterface callbackRestaurantListener;
     private List<Marker> markers;
-    private Location mLastKnownLocation;
+    private ShareDataViewModel model;
 
     public MapViewFragment() {
     }
@@ -89,6 +83,7 @@ public class MapViewFragment extends ToolbarAutocomplete
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
         markers = new ArrayList<>();
+        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
     }
 
     @Override
@@ -112,8 +107,9 @@ public class MapViewFragment extends ToolbarAutocomplete
     @Override
     public void onStart() {
         super.onStart();
-        if (mMap != null){
+        if (mMap != null) {
             markers.clear();
+            mMap.clear();
             getCurrentPlaces();
         }
     }
@@ -134,18 +130,17 @@ public class MapViewFragment extends ToolbarAutocomplete
      * Get the last known location of the device
      */
     private void getCurrentLocation() {
-        LocationServices.getFusedLocationProviderClient(getFragmentContext()).getLastLocation()
-                .addOnCompleteListener(locationTask -> {
-                    if (locationTask.isSuccessful() && locationTask.getResult() != null) {
-                        mLastKnownLocation = locationTask.getResult();
-                        callbackRestaurantListener.updateLastKnowLocation(mLastKnownLocation);
-                        LatLng latLng = new LatLng(mLastKnownLocation.getLatitude(),
-                                mLastKnownLocation.getLongitude());
-                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
-                        mMap.animateCamera(cameraUpdate);
-                        getCurrentPlaces();
-                    }
-                }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_location)));
+        if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
+            model.getMyLocation(getFragmentContext(), true).observe(this, location -> {
+                LatLng latLng = new LatLng(location.getLatitude(),
+                        location.getLongitude());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
+                mMap.animateCamera(cameraUpdate);
+                getCurrentPlaces();
+            });
+        } else {
+            getAccessFineLocationPermission();
+        }
     }
 
     /**
@@ -157,6 +152,7 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     /**
      * Get detail of the restaurant whose ID is passed as a parameter
+     *
      * @param id restaurant ID
      */
     private void getRestaurantDetail(String id) {
@@ -183,8 +179,6 @@ public class MapViewFragment extends ToolbarAutocomplete
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
     }
 
-    // PERMISSION
-
     /**
      * Updating the parameters of the mMap
      */
@@ -201,17 +195,18 @@ public class MapViewFragment extends ToolbarAutocomplete
             getAccessFineLocationPermission();
         }
     }
+
     /**
      * Get the location permission.
      */
     private void getAccessFineLocationPermission() {
         if (getActivity() != null && ContextCompat.checkSelfPermission(getFragmentContext(),
                 ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{ACCESS_FINE_LOCATION},
+            ActivityCompat.requestPermissions(getActivity(), new String[]{ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
@@ -222,26 +217,8 @@ public class MapViewFragment extends ToolbarAutocomplete
      * Find all restaurants around the device position and display a marker based on it
      */
     private void getCurrentPlaces() {
-        List<Place> places = new ArrayList<>();
-        // Use the builder to create a FindCurrentPlaceRequest.
-        FindCurrentPlaceRequest request = FindCurrentPlaceRequest.builder(PLACES_FIELDS).build();
-        // Call findCurrentPlace and handle the response (first check that the user has granted permission).
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
-            Task<FindCurrentPlaceResponse> placeResponse = placesClient.findCurrentPlace(request);
-            placeResponse.addOnCompleteListener(task -> {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    FindCurrentPlaceResponse response = task.getResult();
-                    for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
-                        List<Place.Type> types = placeLikelihood.getPlace().getTypes();
-                        if (types != null && types.contains(Place.Type.RESTAURANT)) {
-                            places.add(placeLikelihood.getPlace());
-                        }
-                    }
-                    if (!places.isEmpty()) {
-                        addMarkerColor(places);
-                    }
-                }
-            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+            model.getMyPlaces(placesClient, true).observe(this, this::addMarkerColor);
         } else {
             getAccessFineLocationPermission();
         }
@@ -249,6 +226,7 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     /**
      * Create and add a marker on the map
+     *
      * @param places restaurant where add the marker
      */
     private void addMarkerColor(@NonNull List<Place> places) {
@@ -275,6 +253,7 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     /**
      * Check if the restaurant passed as parameter have a marker on the map
+     *
      * @param place restaurant
      * @return true if exist
      */
@@ -309,6 +288,7 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     /**
      * Update the camera position on the restaurant passed in parameter and show a marker.
+     *
      * @param place restaurant
      */
     private void updateCameraPosition(@NonNull Place place) {
@@ -316,5 +296,4 @@ public class MapViewFragment extends ToolbarAutocomplete
         mMap.animateCamera(cameraUpdate);
         addMarkerColor(Collections.singletonList(place));
     }
-
 }
