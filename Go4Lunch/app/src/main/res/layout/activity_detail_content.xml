@@ -63,11 +63,27 @@
                 app:layout_constraintHorizontal_bias="0"
                 android:layout_marginTop="5dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginBottom="30dp"
                 android:text="@string/dummy_text_french_restaurant_12_rue_du_faubourg_poissoni_re"
                 android:textSize="14sp"
                 android:textColor="@android:color/white"
                 app:layout_constraintTop_toBottomOf="@+id/detail_activity_title"
+                app:layout_constraintBottom_toTopOf="@+id/detail_activity_distance"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/detail_activity_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintHorizontal_bias="0"
+                android:layout_marginTop="5dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="20dp"
+                android:text="@string/activity_detail_distance"
+                android:textSize="14sp"
+                android:textColor="@android:color/white"
+                app:layout_constraintTop_toBottomOf="@+id/detail_activity_address"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
