@@ -70,7 +70,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     /**
      * Last known location of the device
      */
-    public Location mLastKnownLocation;
+    private Location mLastKnownLocation;
 
     /**
      * True if this activity was opened by the notification

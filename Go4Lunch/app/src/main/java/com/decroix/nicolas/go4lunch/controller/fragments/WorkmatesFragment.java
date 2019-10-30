@@ -1,8 +1,6 @@
 package com.decroix.nicolas.go4lunch.controller.fragments;
 
 
-import android.content.Context;
-import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
@@ -23,7 +20,6 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
-import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.WorkmatesRecyclerViewAdapter;
@@ -51,7 +47,6 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
     private WorkmatesRecyclerViewAdapter adapter;
     private PlacesClient placesClient;
     private List<User> myWorkmates;
-    private Location myLocation;
 
     /**
      * Required to test the recycler view
@@ -125,12 +120,6 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
     @Override
     public void onClickUser(String restaurant) {
         getPlaceDetails(restaurant);
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        myLocation = ((MainActivity) context).mLastKnownLocation;
     }
 
     /**
