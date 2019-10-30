@@ -4,6 +4,7 @@ import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,6 +47,15 @@ public class UserHelper {
      */
     public static Task<DocumentSnapshot> getUser(String uid){
         return UserHelper.getUserCollection().document(uid).get();
+    }
+
+    /**
+     * Retrieves a user whose ID is passed in the function parameter
+     * @param uid ID of the user
+     * @return Task with response
+     */
+    public static DocumentReference getUserListener(String uid){
+        return UserHelper.getUserCollection().document(uid);
     }
 
     /**
