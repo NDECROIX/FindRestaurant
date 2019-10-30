@@ -1,6 +1,5 @@
 package com.decroix.nicolas.go4lunch.base;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -12,22 +11,18 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.view.holders.ToolbarViewHolder;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
@@ -42,11 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 import static android.app.Activity.RESULT_OK;
 
+/**
+ * Class that handle the search view
+ */
 public abstract class ToolbarAutocomplete extends BaseFragment {
 
     private static final int REQ_CODE_SPEECH_INPUT = 959;
@@ -72,9 +67,10 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
 
     /**
      * Call by the main activity this function update the toolbar for create a searchView
-     * @param callback Handle the click on restaurant name
+     *
+     * @param callback           Handle the click on restaurant name
      * @param mLastKnownLocation the last known location of the device
-     * @param textWatcher Handle text in the search view
+     * @param textWatcher        Handle text in the search view
      */
     public void configSearchToolbar(@Nullable AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener callback, Location mLastKnownLocation, @Nullable TextWatcher textWatcher) {
         this.textWatcher = textWatcher;
@@ -244,30 +240,6 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
                     toolbarViewHolder.searchEditText.setText(result.get(0));
                 }
             }
-        }
-    }
-
-    /**
-     * Allows you to link the toolbar view to the fragment
-     */
-    class ToolbarViewHolder {
-        @BindView(R.id.main_activity_toolbar)
-        Toolbar toolbar;
-        @BindView(R.id.main_activity_search_layout)
-        ConstraintLayout searchView;
-        @BindView(R.id.main_activity_search_layout_rc)
-        ConstraintLayout searchViewRc;
-        @BindView(R.id.search_bar_voice_icon)
-        ImageButton searchVoice;
-        @BindView(R.id.search_bar_hint_icon)
-        ImageButton searchHint;
-        @BindView(R.id.search_bar_edit_text)
-        EditText searchEditText;
-        @BindView(R.id.search_autocomplete_recycler_view)
-        RecyclerView recyclerView;
-
-        ToolbarViewHolder(Activity source) {
-            ButterKnife.bind(this, source);
         }
     }
 }
