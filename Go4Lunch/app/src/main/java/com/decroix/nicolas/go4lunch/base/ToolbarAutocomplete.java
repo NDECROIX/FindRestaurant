@@ -76,7 +76,7 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
         this.textWatcher = textWatcher;
         this.callback = callback;
         this.mLastKnownLocation = mLastKnownLocation;
-        if (mLastKnownLocation != null) {
+        if (textWatcher == null) {
             Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
             placesClient = Places.createClient(getFragmentContext());
             configRecyclerView(getFragmentContext());
@@ -107,7 +107,7 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
             toolbarViewHolder.searchViewRc.bringToFront();
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 0);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_autocomplete_search_toolbar));
-        } else {
+        } else if (!visibility){
             toolbarViewHolder.searchEditText.setHint(R.string.search_view_hint_workmates);
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 10);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_search_toolbar));
