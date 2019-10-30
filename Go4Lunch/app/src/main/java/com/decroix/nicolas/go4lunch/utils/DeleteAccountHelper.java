@@ -9,7 +9,6 @@ import com.decroix.nicolas.go4lunch.models.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
@@ -40,13 +39,13 @@ public class DeleteAccountHelper {
     /**
      * Start a re-authentication to delete the account
      * @param context App context
+     * @param firebaseUser Firebase user
      * @param email User email
      * @param password User Password
      */
-    public void deleteAccount(Context context, String email, String password) {
+    public void deleteAccount(Context context, User user, FirebaseUser firebaseUser, String email, String password) {
         this.context = context;
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        mUser = mAuth.getCurrentUser();
+        mUser = firebaseUser;
         // Get auth credentials from the user for re-authentication. The example below shows
         // email and password credentials but there are multiple possible providers,
         // such as GoogleAuthProvider or FacebookAuthProvider.
@@ -56,7 +55,7 @@ public class DeleteAccountHelper {
         mUser.reauthenticate(credential)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        getUserRestaurant(mUser);
+                        getUserRestaurant(mUser, user);
                     } else {
                         callback.failureToDeleteUser(context.getString(R.string.failure_email_password));
                     }
@@ -67,17 +66,12 @@ public class DeleteAccountHelper {
      * Check if there is a restaurant where he/she has registered
      * @param mUser User to delete
      */
-    private void getUserRestaurant(FirebaseUser mUser){
-        UserHelper.getUser(mUser.getUid()).addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                User user = task.getResult().toObject(User.class);
-                if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
-                    deleteUserFromRestaurant(mUser, user);
-                } else {
-                    deleteUser(mUser);
-                }
-            }
-        }).addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_get_user)));
+    private void getUserRestaurant(FirebaseUser mUser, User user) {
+        if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
+            deleteUserFromRestaurant(mUser, user);
+        } else {
+            deleteUser(mUser);
+        }
     }
 
     /**
