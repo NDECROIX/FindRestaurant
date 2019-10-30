@@ -35,7 +35,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.decroix.nicolas.go4lunch.controller.activities.MainActivity" />
         </activity>
-        <activity android:name=".controller.activities.AuthActivity" />
+        <activity android:name=".controller.activities.AuthActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".controller.activities.MainActivity"
             android:launchMode="singleTop"
