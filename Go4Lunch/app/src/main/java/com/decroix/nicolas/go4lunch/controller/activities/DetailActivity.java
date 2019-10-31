@@ -208,11 +208,14 @@ public class DetailActivity extends BaseActivity {
             placesClientHelper = new PlacesClientHelper(this);
         }
         if (placeRestaurant.getId() != null) {
-            placesClientHelper.getPhoneFromPlace(placeRestaurant
-                    .getPhoneNumber()).addOnSuccessListener(response -> {
-                Place place = response.getPlace();
-                if (place.getPhoneNumber() != null) {
-                    callRestaurant(place.getPhoneNumber());
+            placesClientHelper.getPhoneFromPlace(placeRestaurant.getId()).addOnSuccessListener(response -> {
+                if  (response != null){
+                    Place place = response.getPlace();
+                    if (place.getPhoneNumber() != null) {
+                        callRestaurant(place.getPhoneNumber());
+                    } else {
+                        showMessage(getString(R.string.unknown_phone_number));
+                    }
                 } else {
                     showMessage(getString(R.string.unknown_phone_number));
                 }
