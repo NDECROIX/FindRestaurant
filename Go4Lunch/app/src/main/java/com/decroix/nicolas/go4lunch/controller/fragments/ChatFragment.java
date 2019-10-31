@@ -128,8 +128,10 @@ public class ChatFragment extends BaseFragment {
      * Get the user data from the ViewModel
      */
     private void getCurrentUser() {
-        ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
-        model.getMyUser(getCurrentUserID()).observe(this, user -> currentUser = user);
+        if (getActivity() != null) {
+            ShareDataViewModel model = ViewModelProviders.of(getActivity()).get(ShareDataViewModel.class);
+            model.getMyUser(getCurrentUserID()).observe(this, user -> currentUser = user);
+        }
     }
 
     /**

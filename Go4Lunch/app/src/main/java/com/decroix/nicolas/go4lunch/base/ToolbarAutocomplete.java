@@ -92,6 +92,7 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
      * @param visibility If (true) show toolbar
      */
     protected void showToolbar(boolean visibility) {
+        toolbarViewHolder.searchEditText.setText("");
         toolbarViewHolder.toolbar.getMenu().findItem(R.id.menu_activity_main_search).setVisible(visibility);
         if (visibility) {
             toolbarViewHolder.toolbar.setNavigationIcon(R.drawable.ic_menu_24);
@@ -133,7 +134,6 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
         inputMethodManager = (InputMethodManager) toolbarViewHolder.searchEditText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         toolbarViewHolder.searchEditText.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_DONE) {
-                toolbarViewHolder.searchEditText.setText("");
                 toolbarViewHolder.searchEditText.clearFocus();
                 showToolbar(true);
                 return true;
