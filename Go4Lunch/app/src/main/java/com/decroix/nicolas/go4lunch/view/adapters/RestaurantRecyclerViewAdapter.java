@@ -82,6 +82,7 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
         int count = restaurantItem.getCount();
 
         if (count > 0){
+            holder.restaurantPerson.setVisibility(View.VISIBLE);
             StringBuilder sb = new StringBuilder("(").append(count).append(")");
             holder.restaurantPerson.setText(sb);
         } else{

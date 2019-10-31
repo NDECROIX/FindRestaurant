@@ -28,6 +28,7 @@ import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.RestaurantItem;
+import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
@@ -201,7 +202,14 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
                 Restaurant restaurant = doc.getResult().toObject(Restaurant.class);
                 int workmateCount = 0;
                 if (restaurant != null) {
+                    List<User> users = restaurant.getUsers();
                     workmateCount = restaurant.getUsers().size();
+                    for (User user : users){
+                        if (user.getUid().equals(getCurrentUserID())){
+                            workmateCount -= 1;
+                            break;
+                        }
+                    }
                 }
                 addRestaurantInRecyclerView(place, bitmap, workmateCount);
             }
