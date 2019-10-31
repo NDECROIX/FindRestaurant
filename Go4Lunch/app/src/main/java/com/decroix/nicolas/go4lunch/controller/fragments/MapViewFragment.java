@@ -108,13 +108,13 @@ public class MapViewFragment extends ToolbarAutocomplete
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        updateLocationSetting();
         updateMapStyle();
+        updateLocationSetting();
     }
 
     @OnClick(R.id.fragment_map_view_fab)
     void onMyLocationClick() {
-        getCurrentLocation();
+        model.getMyLocation(getActivity(), true);
     }
 
     /**
@@ -122,7 +122,7 @@ public class MapViewFragment extends ToolbarAutocomplete
      */
     private void getCurrentLocation() {
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
-            model.getMyLocation(getFragmentContext(), true).observe(this, location -> {
+            model.getMyLocation(getFragmentContext(), false).observe(this, location -> {
                 LatLng latLng = new LatLng(location.getLatitude(),
                         location.getLongitude());
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
@@ -183,7 +183,6 @@ public class MapViewFragment extends ToolbarAutocomplete
             model.getMyPlaces(placesClient, true).observe(this, this::addMarkerColor);
             getCurrentLocation();
         } else {
-            //mMap.setMyLocationEnabled(false);
             getAccessFineLocationPermission();
         }
     }

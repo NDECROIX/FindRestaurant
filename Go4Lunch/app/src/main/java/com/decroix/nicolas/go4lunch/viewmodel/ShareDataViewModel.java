@@ -108,7 +108,7 @@ public class ShareDataViewModel extends ViewModel {
 
     public List<RestaurantItem> getMyRestaurantItem() {
         boolean notNull = myPlaces.getValue() != null && placesComparator != null;
-        if (notNull && myPlaces.getValue().containsAll(placesComparator) && !placesComparator.isEmpty()) {
+        if (notNull && placesComparator.containsAll(myPlaces.getValue()) && !placesComparator.isEmpty()) {
             return myRestaurantItem;
         }
         return null;
