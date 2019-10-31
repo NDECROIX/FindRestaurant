@@ -25,12 +25,36 @@ import static com.decroix.nicolas.go4lunch.api.PlacesClientHelper.PLACES_FIELDS;
 
 public class ShareDataViewModel extends ViewModel {
 
+    /**
+     * Device location
+     */
     private MutableLiveData<Location> myLocation;
+    /**
+     * Current user
+     */
     private MutableLiveData<User> myUser;
-    private MutableLiveData<List<Place>> myPlaces;
-    private List<RestaurantItem> myRestaurantItem;
-    private List<Place> placesComparator;
 
+    /**
+     * Places from current location
+     */
+    private MutableLiveData<List<Place>> myRestaurants;
+
+    /**
+     * Places from myRestaurants with details
+     */
+    private List<RestaurantItem> myRestaurantItem;
+
+    /**
+     * Last myRestaurants list
+     */
+    private List<Place> restaurantsComparator;
+
+    /**
+     * Get the current device location
+     * @param context App context
+     * @param reset True to recall the device location
+     * @return My location
+     */
     public LiveData<Location> getMyLocation(Context context, boolean reset) {
         if (myLocation == null) {
             myLocation = new MutableLiveData<>();
@@ -41,6 +65,11 @@ public class ShareDataViewModel extends ViewModel {
         return myLocation;
     }
 
+    /**
+     * Get my user from Firebase database
+     * @param uid User uid
+     * @return My user
+     */
     public LiveData<User> getMyUser(String uid) {
         if (myUser == null) {
             myUser = new MutableLiveData<>();
@@ -49,16 +78,26 @@ public class ShareDataViewModel extends ViewModel {
         return myUser;
     }
 
+    /**
+     * Retrieves restaurant next my location
+     * @param placesClient PlaceClient initialized
+     * @param reset True to recall google place api
+     * @return List of restaurant
+     */
     public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset) {
-        if (myPlaces == null) {
-            myPlaces = new MutableLiveData<>();
+        if (myRestaurants == null) {
+            myRestaurants = new MutableLiveData<>();
             loadMyPlaces(placesClient);
         } else if (reset){
             loadMyPlaces(placesClient);
         }
-        return myPlaces;
+        return myRestaurants;
     }
 
+    /**
+     * Call user data from firebase database
+     * @param uid User uid
+     */
     private void loadMyUser(String uid) {
         UserHelper.getUserListener(uid).addSnapshotListener((snapshot, e) -> {
             if (snapshot != null) {
@@ -70,6 +109,10 @@ public class ShareDataViewModel extends ViewModel {
         });
     }
 
+    /**
+     * Recall the device location
+     * @param context App context
+     */
     private void loadMyLocation(Context context) {
         LocationServices.getFusedLocationProviderClient(context).getLastLocation().addOnCompleteListener(locationTask -> {
             if (locationTask.isSuccessful()) {
@@ -78,6 +121,10 @@ public class ShareDataViewModel extends ViewModel {
         });
     }
 
+    /**
+     * Recall GooglePlace api to update restaurant
+     * @param placesClient PlaceClient initialized
+     */
     private void loadMyPlaces(PlacesClient placesClient) {
         List<Place> placesID = new ArrayList<>();
         FindCurrentPlaceRequest request = FindCurrentPlaceRequest.builder(PLACES_FIELDS).build();
@@ -93,22 +140,30 @@ public class ShareDataViewModel extends ViewModel {
                         }
                     }
                 }
-                myPlaces.setValue(placesID);
+                myRestaurants.setValue(placesID);
             }
         });
     }
 
+    /**
+     * Save RestaurantItem in ShareDataViewModel
+     * @param myRestaurantItem List of restaurant item
+     */
     public void setMyRestaurantItem(List<RestaurantItem> myRestaurantItem) {
         this.myRestaurantItem = new ArrayList<>();
-        placesComparator = new ArrayList<>();
+        restaurantsComparator = new ArrayList<>();
         this.myRestaurantItem.addAll(myRestaurantItem);
-        if (myPlaces.getValue() != null)
-            placesComparator.addAll(myPlaces.getValue());
+        if (myRestaurants.getValue() != null)
+            restaurantsComparator.addAll(myRestaurants.getValue());
     }
 
+    /**
+     * Return the last restaurant item list if unchanged else null
+     * @return last restaurant item
+     */
     public List<RestaurantItem> getMyRestaurantItem() {
-        boolean notNull = myPlaces.getValue() != null && placesComparator != null;
-        if (notNull && placesComparator.containsAll(myPlaces.getValue()) && !placesComparator.isEmpty()) {
+        boolean notNull = myRestaurants.getValue() != null && restaurantsComparator != null;
+        if (notNull && restaurantsComparator.containsAll(myRestaurants.getValue()) && !restaurantsComparator.isEmpty()) {
             return myRestaurantItem;
         }
         return null;
