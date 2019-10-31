@@ -336,7 +336,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * @param bitmap restaurant's picture
      */
     private void startDetailActivity(Place place, Bitmap bitmap) {
-        startActivity(DetailActivity.newIntent(this, place, bitmap));
+        startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
     }
 
     @Override

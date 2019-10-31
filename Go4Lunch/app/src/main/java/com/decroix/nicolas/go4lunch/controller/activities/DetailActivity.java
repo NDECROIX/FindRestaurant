@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +25,6 @@ import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
 import com.decroix.nicolas.go4lunch.view.adapters.DetailActivityRecyclerViewAdapter;
-import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -68,12 +66,11 @@ public class DetailActivity extends BaseActivity {
 
     private static final String RESTAURANT = "placeRestaurant";
     private static final String RESTAURANT_BITMAP = "restaurant_bitmap";
+    private static final String MY_LOCATION = "my_location";
 
     private Place placeRestaurant;
     private User myUser;
-    private Location myLocation;
     private PlacesClientHelper placesClientHelper;
-    private ShareDataViewModel model;
 
     /**
      * Create an intent of this class
@@ -83,9 +80,10 @@ public class DetailActivity extends BaseActivity {
      * @param bitmap     Image of the restaurant if exist else null
      * @return Intent
      */
-    public static Intent newIntent(Context context, Place restaurant, @Nullable Bitmap bitmap) {
+    public static Intent newIntent(Context context, Place restaurant, @Nullable Bitmap bitmap, Location location) {
         Bundle bundle = new Bundle();
         bundle.putParcelable(RESTAURANT, restaurant);
+        bundle.putParcelable(MY_LOCATION, location);
         if (bitmap != null) {
             bundle.putParcelable(RESTAURANT_BITMAP, bitmap);
         }
@@ -100,17 +98,19 @@ public class DetailActivity extends BaseActivity {
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
         configToolbar();
-        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
-        getUserFromViewModel();
+        getUserFromFirebase();
         displayPlaceDetails();
     }
 
     /**
      * Get data user's from ViewModel
      */
-    private void getUserFromViewModel() {
-        model.getMyUser(getCurrentUserID()).observe(this, user -> myUser = user);
-        model.getMyLocation(this, false).observe(this, location -> myLocation = location);
+    private void getUserFromFirebase() {
+        UserHelper.getUserListener(getCurrentUserID()).addSnapshotListener(((snapshot, e) -> {
+            if (snapshot != null) {
+                myUser = snapshot.toObject(User.class);
+            }
+        }));
     }
 
     /**
@@ -309,6 +309,7 @@ public class DetailActivity extends BaseActivity {
         if (bundle != null) {
             this.placeRestaurant = bundle.getParcelable(RESTAURANT);
             Bitmap restaurantBitmap = bundle.getParcelable(RESTAURANT_BITMAP);
+            Location myLocation = bundle.getParcelable(MY_LOCATION);
 
             if (getSupportActionBar() != null
                     && placeRestaurant.getOpeningHours() != null

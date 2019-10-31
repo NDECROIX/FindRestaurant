@@ -1,6 +1,7 @@
 package com.decroix.nicolas.go4lunch.controller.fragments;
 
 
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +25,7 @@ import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.WorkmatesRecyclerViewAdapter;
+import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
@@ -90,6 +93,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
                 }
             }
             loadUsersList(users);
+            myWorkmates = new ArrayList<>();
             myWorkmates.addAll(users);
         });
     }
@@ -128,6 +132,8 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
      * @param id restaurant id
      */
     private void getPlaceDetails(String id) {
+        ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
+        Location myLocation = model.getMyLocation(getActivity(), false).getValue();
 
         FetchPlaceRequest request = FetchPlaceRequest.newInstance(id, PLACE_FIELDS);
 
@@ -143,10 +149,10 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
                     placesClient
                             .fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
                             startActivity(DetailActivity
-                                    .newIntent(getContext(), place, fetchPhotoResponse.getBitmap())))
+                                    .newIntent(getContext(), place, fetchPhotoResponse.getBitmap(), myLocation)))
                             .addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
                 } else {
-                    startActivity(DetailActivity.newIntent(getContext(), place, null));
+                    startActivity(DetailActivity.newIntent(getContext(), place, null, myLocation));
                 }
             }
         }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
@@ -191,5 +197,11 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
         } else {
             this.callbackTest = callbackTest;
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        showToolbar(true);
+        super.onDestroyView();
     }
 }
