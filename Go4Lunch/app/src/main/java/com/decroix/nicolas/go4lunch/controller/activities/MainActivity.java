@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
+import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.controller.fragments.ChatFragment;
 import com.decroix.nicolas.go4lunch.controller.fragments.ListViewFragment;
@@ -160,8 +161,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     getCurrentUser().getEmail());
         }
         if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
-            displayUsersRestaurant();
-            notificationCaller = true;
+            if (myUser == null){
+                UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(task -> {
+                    myUser =(task != null)? task.toObject(User.class) : null;
+                    notificationCaller = true;
+                    displayUsersRestaurant();
+                });
+            }
         }
     }
 

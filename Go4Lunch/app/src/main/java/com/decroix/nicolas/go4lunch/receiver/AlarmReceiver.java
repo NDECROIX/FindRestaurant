@@ -106,7 +106,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         StringBuilder content = new StringBuilder();
         content.append(restaurant.getAddress());
         if (restaurant.getUsers().size() > 1) {
-            content.append(R.string.notification_joins_you);
+            content.append(mContext.getResources().getString(R.string.notification_joins_you));
             for (User user : restaurant.getUsers()) {
                 if (!user.getUid().equals(mUser.getUid())) {
                     content.append(user.getUsername()).append(", ");
@@ -117,7 +117,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Intent intent = new Intent(mContext, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.putExtra(BaseActivity.EXTRA_CALLER, getClass().getName());
+        intent.putExtra(BaseActivity.EXTRA_CALLER, AlarmReceiver.class.getName());
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
 
         return new NotificationCompat.Builder(mContext, CHANNEL_ID)

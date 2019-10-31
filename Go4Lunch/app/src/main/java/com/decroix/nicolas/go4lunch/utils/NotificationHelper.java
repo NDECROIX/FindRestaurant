@@ -5,7 +5,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.os.SystemClock;
+
+import androidx.preference.PreferenceManager;
 
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
@@ -51,7 +53,7 @@ public class NotificationHelper {
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, minutes);
-
+        //SystemClock.elapsedRealtime() +
         if (alarmMgr != null) {
             alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY, alarmIntent);
