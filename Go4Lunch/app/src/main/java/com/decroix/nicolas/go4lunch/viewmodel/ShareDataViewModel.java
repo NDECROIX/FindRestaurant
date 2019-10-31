@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.decroix.nicolas.go4lunch.api.UserHelper;
+import com.decroix.nicolas.go4lunch.models.RestaurantItem;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
@@ -27,10 +28,14 @@ public class ShareDataViewModel extends ViewModel {
     private MutableLiveData<Location> myLocation;
     private MutableLiveData<User> myUser;
     private MutableLiveData<List<Place>> myPlaces;
+    private List<RestaurantItem> myRestaurantItem;
+    private List<Place> placesComparator;
 
     public LiveData<Location> getMyLocation(Context context, boolean reset) {
-        if (myLocation == null || reset) {
+        if (myLocation == null) {
             myLocation = new MutableLiveData<>();
+            loadMyLocation(context);
+        } else if (reset){
             loadMyLocation(context);
         }
         return myLocation;
@@ -45,8 +50,10 @@ public class ShareDataViewModel extends ViewModel {
     }
 
     public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset) {
-        if (myPlaces == null || reset) {
+        if (myPlaces == null) {
             myPlaces = new MutableLiveData<>();
+            loadMyPlaces(placesClient);
+        } else if (reset){
             loadMyPlaces(placesClient);
         }
         return myPlaces;
@@ -89,5 +96,21 @@ public class ShareDataViewModel extends ViewModel {
                 myPlaces.setValue(placesID);
             }
         });
+    }
+
+    public void setMyRestaurantItem(List<RestaurantItem> myRestaurantItem) {
+        this.myRestaurantItem = new ArrayList<>();
+        placesComparator = new ArrayList<>();
+        this.myRestaurantItem.addAll(myRestaurantItem);
+        if (myPlaces.getValue() != null)
+            placesComparator.addAll(myPlaces.getValue());
+    }
+
+    public List<RestaurantItem> getMyRestaurantItem() {
+        boolean notNull = myPlaces.getValue() != null && placesComparator != null;
+        if (notNull && myPlaces.getValue().containsAll(placesComparator) && !placesComparator.isEmpty()) {
+            return myRestaurantItem;
+        }
+        return null;
     }
 }

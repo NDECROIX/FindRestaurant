@@ -23,9 +23,14 @@ import java.util.List;
 public class PlacesClientHelper {
 
     /**
+     * Array of all data field return by the find current place request
+     */
+    public static final List<Place.Field> PLACES_FIELDS = Arrays.asList(Place.Field.ID, Place.Field.TYPES, Place.Field.LAT_LNG);
+
+    /**
      * Array of all data types returned by a fetch place request
      */
-    private static final List<Place.Field> PLACE_FIELDS = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
+    public static final List<Place.Field> PLACE_FIELDS = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
             Place.Field.OPENING_HOURS, Place.Field.RATING, Place.Field.PHOTO_METADATAS, Place.Field.LAT_LNG,
             Place.Field.TYPES);
 

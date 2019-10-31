@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -15,6 +14,7 @@ import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.models.RestaurantItem;
 import com.decroix.nicolas.go4lunch.utils.UsefulFunctions;
 import com.decroix.nicolas.go4lunch.view.holders.RestaurantViewHolder;
 import com.google.android.gms.maps.model.LatLng;
@@ -22,7 +22,6 @@ import com.google.android.libraries.places.api.model.Place;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getDistance;
 import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours;
@@ -58,6 +57,15 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
         this.restaurants.clear();
     }
 
+    public List<RestaurantItem> getRestaurants() {
+        return restaurants;
+    }
+
+    public void setRestaurants(List<RestaurantItem> restaurants) {
+        this.restaurants.addAll(restaurants);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public RestaurantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -67,13 +75,11 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
     }
 
     @Override
-    // Glide manage this exception
-    @SuppressWarnings({"unchecked"})
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
         RestaurantItem restaurantItem = restaurants.get(position);
-        Place place = restaurantItem.place;
-        Bitmap picture = restaurantItem.bitmap;
-        int count = restaurantItem.count;
+        Place place = restaurantItem.getPlace();
+        Bitmap picture = restaurantItem.getBitmap();
+        int count = restaurantItem.getCount();
 
         if (count > 0){
             StringBuilder sb = new StringBuilder("(").append(count).append(")");
@@ -90,7 +96,7 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
         if (picture != null) {
             Glide.with(holder.itemView)
                     .load(picture)
-                    .transform(new MultiTransformation(new CenterCrop(), new RoundedCorners(8)))
+                    .transform(new MultiTransformation<>(new CenterCrop(), new RoundedCorners(8)))
                     .into(holder.restaurantPicture);
         }
         holder.ratingBar.setRating(UsefulFunctions.parseRating(place.getRating()));
@@ -101,31 +107,5 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
     @Override
     public int getItemCount() {
         return restaurants.size();
-    }
-
-    class RestaurantItem {
-        final Place place;
-        final Bitmap bitmap;
-        final int count;
-
-        RestaurantItem(Place place, Bitmap bitmap, int count) {
-            this.place = place;
-            this.bitmap = bitmap;
-            this.count = count;
-        }
-
-        @Override
-        public boolean equals(@Nullable Object obj) {
-            if (!(obj instanceof RestaurantItem)){
-                return false;
-            }
-            RestaurantItem restaurantItem = (RestaurantItem) obj;
-            return Objects.equals(this.place.getId(), restaurantItem.place.getId());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(this);
-        }
     }
 }

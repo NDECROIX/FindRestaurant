@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
@@ -83,7 +84,6 @@ public class MapViewFragment extends ToolbarAutocomplete
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
         markers = new ArrayList<>();
-        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
     }
 
     @Override
@@ -102,23 +102,14 @@ public class MapViewFragment extends ToolbarAutocomplete
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         callbackRestaurantListener = (MapViewFragmentInterface) context;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mMap != null) {
-            markers.clear();
-            mMap.clear();
-            getCurrentPlaces();
-        }
+        model = ViewModelProviders.of((FragmentActivity) context).get(ShareDataViewModel.class);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         updateLocationSetting();
-        updateMarker();
+        updateMapStyle();
     }
 
     @OnClick(R.id.fragment_map_view_fab)
@@ -146,7 +137,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     /**
      * Update the style map with the style_json
      */
-    private void updateMarker() {
+    private void updateMapStyle() {
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getFragmentContext(), R.raw.style_json));
     }
 
@@ -189,6 +180,7 @@ public class MapViewFragment extends ToolbarAutocomplete
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             mMap.setMyLocationEnabled(true);
+            model.getMyPlaces(placesClient, true).observe(this, this::addMarkerColor);
             getCurrentLocation();
         } else {
             //mMap.setMyLocationEnabled(false);
@@ -217,11 +209,9 @@ public class MapViewFragment extends ToolbarAutocomplete
      * Find all restaurants around the device position and display a marker based on it
      */
     private void getCurrentPlaces() {
-        if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
-            model.getMyPlaces(placesClient, true).observe(this, this::addMarkerColor);
-        } else {
-            getAccessFineLocationPermission();
-        }
+        mMap.clear();
+        markers.clear();
+        model.getMyPlaces(placesClient, true);
     }
 
     /**
@@ -242,7 +232,7 @@ public class MapViewFragment extends ToolbarAutocomplete
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(place.getLatLng())
                             .icon(BitmapDescriptorFactory.fromBitmap(
-                                    Bitmap.createScaledBitmap(((BitmapDrawable) getResources()
+                                    Bitmap.createScaledBitmap(((BitmapDrawable) getFragmentContext().getResources()
                                             .getDrawable(markerResource)).getBitmap(), 80, 110, false)
                             )));
                     marker.setTag(place);
@@ -295,5 +285,11 @@ public class MapViewFragment extends ToolbarAutocomplete
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM);
         mMap.animateCamera(cameraUpdate);
         addMarkerColor(Collections.singletonList(place));
+    }
+
+    @Override
+    public void onDestroyView() {
+        showToolbar(true);
+        super.onDestroyView();
     }
 }

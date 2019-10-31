@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,7 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
+import com.decroix.nicolas.go4lunch.models.RestaurantItem;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
@@ -75,6 +77,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         callback = (RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener) context;
+        model = ViewModelProviders.of((FragmentActivity) context).get(ShareDataViewModel.class);
     }
 
     public ListViewFragment() {
@@ -121,7 +124,6 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         super.onCreate(savedInstanceState);
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
-        model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
     }
 
     @Override
@@ -147,7 +149,12 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     @AfterPermissionGranted(PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
     private void getCurrentRestaurants() {
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
-            model.getMyPlaces(placesClient, false).observe(this, this::getRestaurantDetails);
+            List<RestaurantItem> restaurantItems = model.getMyRestaurantItem();
+            if (restaurantItems == null){
+                model.getMyPlaces(placesClient, false).observe(this, this::getRestaurantDetails);
+            } else {
+                adapter.setRestaurants(restaurantItems);
+            }
         } else {
             getLocationPermission();
         }
@@ -164,10 +171,8 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         for (Place placeId : placesId) {
             if (placeId != null && placeId.getId() != null) {
                 FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId.getId(), PLACE_FIELDS);
-
                 placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
                     Place place = response.getPlace();
-
                     if (place.getPhotoMetadatas() != null) {
                         FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
                                 .setMaxWidth(500)
@@ -181,7 +186,6 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
                         countWorkmates(place, null);
                     }
                 }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
-
             }
         }
     }
@@ -256,4 +260,10 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        model.setMyRestaurantItem(adapter.getRestaurants());
+        showToolbar(true);
+        super.onDestroyView();
+    }
 }
