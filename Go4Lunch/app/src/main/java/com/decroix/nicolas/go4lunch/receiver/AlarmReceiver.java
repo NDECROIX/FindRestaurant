@@ -54,15 +54,15 @@ public class AlarmReceiver extends BroadcastReceiver {
      */
     private void manageNotification() {
         // get user from firestore
-        getUserFromFirestore()
+        UserHelper.getUser(mUser.getUid())
                 .addOnCompleteListener(userTask -> {
 
                     if (userTask.isSuccessful() && userTask.getResult() != null) {
                         User user = userTask.getResult().toObject(User.class);
 
-                        if (user != null && user.getLunchRestaurantID() != null) {
+                        if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
                             // Take the lunch restaurant
-                            getRestaurantFromFirestore(user.getLunchRestaurantID())
+                            RestaurantHelper.getRestaurant(user.getLunchRestaurantID())
                                     .addOnSuccessListener(restaurantResult -> {
                                         if (restaurantResult != null) {
                                             // Create the notification with the restaurant
@@ -78,23 +78,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                         }
                     }
                 });
-    }
-
-    /**
-     * Retrieves the restaurant where the user is registered
-     * @param restaurantID Restaurant ID
-     * @return Task with result
-     */
-    private Task<DocumentSnapshot> getRestaurantFromFirestore(String restaurantID) {
-        return RestaurantHelper.getRestaurant(restaurantID);
-    }
-
-    /**
-     * Retrieves the user from Firebase database
-     * @return Task with result
-     */
-    private Task<DocumentSnapshot> getUserFromFirestore() {
-        return UserHelper.getUser(mUser.getUid());
     }
 
     /**

@@ -14,7 +14,7 @@ import com.decroix.nicolas.go4lunch.R;
 /**
  * Create TimePickerDialog with the time passed in the constructor
  */
-class TimePickerFragment extends DialogFragment {
+public class TimePickerFragment extends DialogFragment {
 
     private final TimePickerDialog.OnTimeSetListener onTimeSetListener;
     private final int hours;

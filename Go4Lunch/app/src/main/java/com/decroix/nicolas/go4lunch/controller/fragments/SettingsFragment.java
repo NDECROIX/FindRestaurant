@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -172,7 +172,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         Objects.requireNonNull(getActivity(), getString(R.string.rnn_context_cannot_be_null));
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.fragment_settings_delete_account_dialog, null);
-        final EditText summary = view.findViewById(R.id.alert_dialog_summary);
+        final TextView summary = view.findViewById(R.id.alert_dialog_summary);
         summary.setText(R.string.alert_dialog_delete_account_re_authenticate);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context)
                 .setView(view)
@@ -194,9 +194,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public OnFailureListener failureToDeleteUser(String text) {
-        return e -> {
-            System.out.println("ERRRRRRORRRRR" + e);
-            Toast.makeText(context, text + e, Toast.LENGTH_SHORT).show();
-        };
+        return e -> Toast.makeText(context, text + e, Toast.LENGTH_SHORT).show();
     }
 }
