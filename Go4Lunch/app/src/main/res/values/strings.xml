@@ -155,6 +155,16 @@
     <string name="failure_email_password">Failure in email/password</string>
     <string name="champ_empty">Empty fields…</string>
     <string name="afl_create_restaurant">Error when creating the restaurant</string>
-    <string name="activity_detail_distance">Distance :\u0020</string>
+    <string name="activity_detail_distance">"Distance : "</string>
+
+    <!-- HOURS -->
+    <string name="hours_closing_soon">Closing soon</string>
+    <string name="hours_closing">Closed</string>
+    <string name="hours_open_h_24">Open 24/7</string>
+    <string name="date_format">h.mm a</string>
+    <string name="hours_open_at">"Open at "</string>
+    <string name="hours_open_until">"Open until "</string>
+    <string name="afl_delete_messages">Failure when deleting messages</string>
+    <string name="afl_delete_files">Failure when deleting files</string>
 
 </resources>

@@ -66,5 +66,13 @@
     <string name="champ_empty">Champs vides…</string>
     <string name="afl_create_restaurant">Erreur lors de la création du restaurant</string>
     <string name="search_view_hint_workmates">Chercher un restaurant</string>
-    <string name="activity_detail_distance">Distance :\u0020</string>
+    <string name="activity_detail_distance">"Distance : "</string>
+    <string name="date_format">H:mm</string>
+    <string name="hours_closing">Fermé</string>
+    <string name="hours_closing_soon">Ferme bientôt</string>
+    <string name="hours_open_at">"Ouvre à "</string>
+    <string name="hours_open_h_24">Ouvert 24/7</string>
+    <string name="hours_open_until">"Ouvert jusqu'à "</string>
+    <string name="afl_delete_files">Échec lors de la suppression des fichiers</string>
+    <string name="afl_delete_messages">Échec lors de la suppression des messages</string>
 </resources>
