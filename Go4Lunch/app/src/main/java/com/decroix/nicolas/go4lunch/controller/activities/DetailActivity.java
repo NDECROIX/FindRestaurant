@@ -318,7 +318,7 @@ public class DetailActivity extends BaseActivity {
                     && placeRestaurant.getOpeningHours() != null
                     && placeRestaurant.getLatLng() != null) {
                 getSupportActionBar()
-                        .setTitle(getOpeningHours(placeRestaurant.getOpeningHours()));
+                        .setTitle(getOpeningHours(this, placeRestaurant.getOpeningHours()));
             }
 
             restaurantTitle.setText(placeRestaurant.getName());
