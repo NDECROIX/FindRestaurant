@@ -85,7 +85,6 @@ public class ChatFragment extends BaseFragment {
         // Required empty public constructor
     }
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,6 +141,7 @@ public class ChatFragment extends BaseFragment {
             if (snapshot != null && !snapshot.getDocuments().isEmpty()) {
                 List<Message> messages = snapshot.toObjects(Message.class);
                 updateRecyclerView(messages);
+                chatIsEmpty.setVisibility(View.GONE);
             } else {
                 chatIsEmpty.setVisibility(View.VISIBLE);
             }
@@ -195,9 +195,9 @@ public class ChatFragment extends BaseFragment {
      */
     private void sendMessageWithPhoto(final String message) {
         String uuid = UUID.randomUUID().toString();
-        StorageHelper.putFileOnFirebaseStorage(uuid, uriImageSelected).addOnSuccessListener(taskSnapshot -> {
+        StorageHelper.putFileOnFirebaseStorage(getCurrentUserID(), uuid, uriImageSelected).addOnSuccessListener(taskSnapshot -> {
             if (taskSnapshot.getMetadata() != null) {
-                StorageHelper.getUrlPicture(uuid).addOnCompleteListener(task -> {
+                StorageHelper.getUrlPicture(getCurrentUserID(), uuid).addOnCompleteListener(task -> {
                     Uri downloadUri = task.getResult();
                     if (downloadUri != null)
                         MessageHelper.createMessageWithImageForChat(downloadUri.toString(), message, currentUser)

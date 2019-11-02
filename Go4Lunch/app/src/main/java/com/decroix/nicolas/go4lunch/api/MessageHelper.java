@@ -1,7 +1,5 @@
 package com.decroix.nicolas.go4lunch.api;
 
-import androidx.annotation.VisibleForTesting;
-
 import com.decroix.nicolas.go4lunch.models.Message;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.google.android.gms.tasks.Task;
@@ -37,13 +35,11 @@ public class MessageHelper {
         return MessageHelper.getMessageCollection().add(message);
     }
 
-    @VisibleForTesting
-    static Query getMessageFromUserSender(String userSenderID){
+    public static Query getMessageFromUserSender(String userSenderID) {
         return MessageHelper.getMessageCollection().whereArrayContains("userSenderID", userSenderID);
     }
 
-    @VisibleForTesting
-    static Task<Void> deleteMessage(String messageID){
+    public static Task<Void> deleteMessage(String messageID) {
         return MessageHelper.getMessageCollection().document(messageID).delete();
     }
 

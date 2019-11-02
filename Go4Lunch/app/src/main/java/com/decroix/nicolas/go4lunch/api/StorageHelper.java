@@ -2,6 +2,8 @@ package com.decroix.nicolas.go4lunch.api;
 
 import android.net.Uri;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -12,7 +14,7 @@ public class StorageHelper {
 
     /**
      * Retrieves the storage reference
-     * @param uid image uid
+     * @param uid User uid
      * @return Storage reference of the image
      */
     private static StorageReference getStorageReference(String uid){
@@ -21,12 +23,13 @@ public class StorageHelper {
 
     /**
      * Add a file on firebase storage
-     * @param uid Image uid
+     * @param userUid User uid
+     * @param imageUid Image uid
      * @param uri Image uri
      * @return Upload task
      */
-    public static UploadTask putFileOnFirebaseStorage(String uid, Uri uri){
-        return getStorageReference(uid).putFile(uri);
+    public static UploadTask putFileOnFirebaseStorage(String userUid, String imageUid, Uri uri){
+        return getStorageReference(userUid).child(imageUid).putFile(uri);
     }
 
     /**
@@ -34,8 +37,17 @@ public class StorageHelper {
      * @param uid Image uid
      * @return Void task
      */
-    static Task<Void> deleteFileFromFirebaseStorage(String uid){
-        return getStorageReference(uid).delete();
+    @VisibleForTesting
+    static Task<Void> deleteFileFromFirebaseStorage(String userId, String uid){
+        return getStorageReference(userId).child(uid).delete();
+    }
+
+    /**
+     * Delete a file from firebase storage
+     * @return Void task
+     */
+    public static Task<Void> deleteFilesFromFirebaseStorage(String userUid){
+        return getStorageReference(userUid).delete();
     }
 
     /**
@@ -43,8 +55,8 @@ public class StorageHelper {
      * @param uid Image uid
      * @return Uri task
      */
-    public static Task<Uri> getUrlPicture(String uid){
-        return getStorageReference(uid).getDownloadUrl();
+    public static Task<Uri> getUrlPicture(String userUid, String uid){
+        return getStorageReference(userUid).child(uid).getDownloadUrl();
     }
 
 }
