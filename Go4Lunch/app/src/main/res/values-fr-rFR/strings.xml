@@ -75,4 +75,6 @@
     <string name="hours_open_until">"Ouvert jusqu'à "</string>
     <string name="afl_delete_files">Échec lors de la suppression des fichiers</string>
     <string name="afl_delete_messages">Échec lors de la suppression des messages</string>
+    <string name="alert_dialog_re_authenticate_button">Ré-authentifier</string>
+    <string name="alert_dialog_delete_account_re_authenticate">Vous devez vous ré-authentifier pour supprimer votre compte</string>
 </resources>

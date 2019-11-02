@@ -161,10 +161,12 @@
     <string name="hours_closing_soon">Closing soon</string>
     <string name="hours_closing">Closed</string>
     <string name="hours_open_h_24">Open 24/7</string>
-    <string name="date_format">h.mm a</string>
+    <string name="date_format">K.mm a</string>
     <string name="hours_open_at">"Open at "</string>
     <string name="hours_open_until">"Open until "</string>
     <string name="afl_delete_messages">Failure when deleting messages</string>
     <string name="afl_delete_files">Failure when deleting files</string>
+    <string name="alert_dialog_delete_account_re_authenticate">You must re-authenticate to delete your account</string>
+    <string name="alert_dialog_re_authenticate_button">Re-authenticate</string>
 
 </resources>

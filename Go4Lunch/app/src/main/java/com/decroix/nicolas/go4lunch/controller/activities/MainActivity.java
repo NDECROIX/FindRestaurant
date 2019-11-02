@@ -93,10 +93,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         if (!isCurrentUserLogged()) {
-            startActivity(AuthActivity.newIntent(this));
-            return;
+            startActivity(AuthActivity.newIntent(this, MainActivity.class.getName()));
+        } else {
+            configView();
         }
-        configView();
     }
 
     /**
@@ -151,7 +151,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private void updateUI() {
         if (!isCurrentUserLogged()) {
-            startActivity(AuthActivity.newIntent(this));
+            startActivity(AuthActivity.newIntent(this, MainActivity.class.getName()));
         }
         if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
             if (myUser == null){
@@ -301,7 +301,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     private void logout() {
         FirebaseAuth.getInstance().signOut();
-        startActivity(AuthActivity.newIntent(this));
+        startActivity(AuthActivity.newIntent(this, MainActivity.class.getName()));
     }
 
     @Override

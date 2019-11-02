@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -224,7 +223,7 @@ public class MapViewFragment extends ToolbarAutocomplete
                     int markerResource = R.drawable.ic_marker_white;
                     if (doc.isSuccessful() && doc.getResult() != null) {
                         Restaurant restaurant = doc.getResult().toObject(Restaurant.class);
-                        if (restaurant != null && !restaurant.getUsers().isEmpty() &&
+                        if (myUser != null && restaurant != null && !restaurant.getUsers().isEmpty() &&
                                 !restaurant.getPlaceID().equals(myUser.getLunchRestaurantID()))
                             markerResource = R.drawable.ic_marker_orange;
                     }

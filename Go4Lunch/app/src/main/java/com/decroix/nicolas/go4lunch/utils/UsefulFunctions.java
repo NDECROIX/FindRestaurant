@@ -52,7 +52,7 @@ public class UsefulFunctions {
         int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
         Period period = null;
         if (openingHours.getPeriods().size() > 0){
-            day = (openingHours.getPeriods().size() >= day) ? day : 0;
+            day = (openingHours.getPeriods().size() > day) ? day : 0;
             period = openingHours.getPeriods().get(day);
         }
         if (context != null && period != null && period.getOpen() != null && period.getClose() != null) {
