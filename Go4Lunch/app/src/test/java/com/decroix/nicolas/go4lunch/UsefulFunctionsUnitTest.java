@@ -31,7 +31,7 @@ public class UsefulFunctionsUnitTest {
         List<String> sevenDays = Arrays.asList(day, day, day, day, day, day, day);
         OpeningHours openingHours = mock(OpeningHours.class);
         when(openingHours.getWeekdayText()).thenReturn(sevenDays);
-        String result = UsefulFunctions.getOpeningHours(openingHours);
+        String result = UsefulFunctions.getOpeningHours(null, openingHours);
         assertEquals(expected, result);
     }
 

@@ -126,7 +126,7 @@ public class StorageHelperTest {
     @DataPoint
     public void removeFileFromFirebaseStorage() {
         callOnApiIdl.increment();
-        StorageHelper.deleteFilesFromFirebaseStorage(UUID_STORAGE).addOnCompleteListener(task -> {
+        StorageHelper.deleteFileFromFirebaseStorage(UUID_STORAGE).addOnCompleteListener(task -> {
             taskIsSuccessful = task.isSuccessful();
             callOnApiIdl.decrement();
         });

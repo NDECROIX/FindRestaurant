@@ -27,6 +27,7 @@
         android:textSize="@dimen/nav_header_title_size"
         android:textColor="@android:color/white"
         android:gravity="center"
+        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="@id/main_activity_nav_header_picture"
         app:layout_constraintStart_toStartOf="parent"/>
 
