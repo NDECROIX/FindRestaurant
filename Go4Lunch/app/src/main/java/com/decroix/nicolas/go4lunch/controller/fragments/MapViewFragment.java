@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,14 +15,15 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
+import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
+import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.maps.CameraUpdate;
@@ -74,6 +76,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     private MapViewFragmentInterface callbackRestaurantListener;
     private List<Marker> markers;
     private ShareDataViewModel model;
+    private User myUser;
 
     public MapViewFragment() {
     }
@@ -84,6 +87,7 @@ public class MapViewFragment extends ToolbarAutocomplete
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
         markers = new ArrayList<>();
+        model.getMyUser(getCurrentUserID()).observe(this, user -> myUser = user);
     }
 
     @Override
@@ -102,7 +106,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         callbackRestaurantListener = (MapViewFragmentInterface) context;
-        model = ViewModelProviders.of((FragmentActivity) context).get(ShareDataViewModel.class);
+        model = ViewModelProviders.of((MainActivity) context).get(ShareDataViewModel.class);
     }
 
     @Override
@@ -114,7 +118,7 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     @OnClick(R.id.fragment_map_view_fab)
     void onMyLocationClick() {
-        model.getMyLocation(getActivity(), true);
+        model.getMyLocation(getFragmentContext(), true);
     }
 
     /**
@@ -122,12 +126,12 @@ public class MapViewFragment extends ToolbarAutocomplete
      */
     private void getCurrentLocation() {
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
-            model.getMyLocation(getFragmentContext(), false).observe(this, location -> {
+            model.getMyLocation(getFragmentContext(), true).observe(this, location -> {
                 LatLng latLng = new LatLng(location.getLatitude(),
                         location.getLongitude());
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM);
                 mMap.animateCamera(cameraUpdate);
-                getCurrentPlaces();
+                model.getMyPlaces(placesClient, true, location);
             });
         } else {
             getAccessFineLocationPermission();
@@ -180,7 +184,11 @@ public class MapViewFragment extends ToolbarAutocomplete
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             mMap.setMyLocationEnabled(true);
-            model.getMyPlaces(placesClient, true).observe(this, this::addMarkerColor);
+            model.getMyPlaces(placesClient, false, null).observe(this, places -> {
+                mMap.clear();
+                markers.clear();
+                addMarkerColor(places);
+            });
             getCurrentLocation();
         } else {
             getAccessFineLocationPermission();
@@ -205,15 +213,6 @@ public class MapViewFragment extends ToolbarAutocomplete
     }
 
     /**
-     * Find all restaurants around the device position and display a marker based on it
-     */
-    private void getCurrentPlaces() {
-        mMap.clear();
-        markers.clear();
-        model.getMyPlaces(placesClient, true);
-    }
-
-    /**
      * Create and add a marker on the map
      *
      * @param places restaurant where add the marker
@@ -225,7 +224,8 @@ public class MapViewFragment extends ToolbarAutocomplete
                     int markerResource = R.drawable.ic_marker_white;
                     if (doc.isSuccessful() && doc.getResult() != null) {
                         Restaurant restaurant = doc.getResult().toObject(Restaurant.class);
-                        if (restaurant != null && !restaurant.getUsers().isEmpty())
+                        if (restaurant != null && !restaurant.getUsers().isEmpty() &&
+                                !restaurant.getPlaceID().equals(myUser.getLunchRestaurantID()))
                             markerResource = R.drawable.ic_marker_orange;
                     }
                     Marker marker = mMap.addMarker(new MarkerOptions()

@@ -1,6 +1,9 @@
 package com.decroix.nicolas.go4lunch.view.adapters;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,26 +82,37 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
         RestaurantItem restaurantItem = restaurants.get(position);
         Place place = restaurantItem.getPlace();
         Bitmap picture = restaurantItem.getBitmap();
+        Context context = holder.itemView.getContext();
         int count = restaurantItem.getCount();
 
-        if (count > 0){
+        if (count > 0) {
             holder.restaurantPerson.setVisibility(View.VISIBLE);
             StringBuilder sb = new StringBuilder("(").append(count).append(")");
             holder.restaurantPerson.setText(sb);
-        } else{
+        } else {
             holder.restaurantPerson.setVisibility(View.GONE);
         }
         holder.restaurantTitle.setText(place.getName());
         holder.restaurantAddress.setText(place.getAddress());
         if (place.getOpeningHours() != null) {
-            holder.restaurantOpen.setText(getOpeningHours(place.getOpeningHours()));
+            String hours = getOpeningHours(context, place.getOpeningHours());
+            holder.restaurantOpen.setText(hours);
+            if (hours.equals(context.getString(R.string.hours_closing_soon)) ||
+                    hours.equals(context.getString(R.string.hours_closing))){
+                holder.restaurantOpen.setTextColor(Color.RED);
+            } else {
+                holder.restaurantOpen.setTextColor(context.getResources().getColor(R.color.colorTextDefault));
+            }
         }
         holder.itemView.setOnClickListener(view -> callback.onClickRestaurant(place, picture));
         if (picture != null) {
+            holder.restaurantPicture.setVisibility(View.VISIBLE);
             Glide.with(holder.itemView)
                     .load(picture)
-                    .transform(new MultiTransformation<>(new CenterCrop(), new RoundedCorners(8)))
+                    .transform(new MultiTransformation<Bitmap>(new CenterCrop(), new RoundedCorners(8)))
                     .into(holder.restaurantPicture);
+        } else {
+            holder.restaurantPicture.setVisibility(View.GONE);
         }
         holder.ratingBar.setRating(UsefulFunctions.parseRating(place.getRating()));
         if (place.getLatLng() != null)

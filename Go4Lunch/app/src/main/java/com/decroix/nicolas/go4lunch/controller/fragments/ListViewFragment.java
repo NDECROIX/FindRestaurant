@@ -73,6 +73,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     private RestaurantRecyclerViewAdapter adapter;
     private RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener callback;
     private ShareDataViewModel model;
+    private boolean addRestaurant;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -118,6 +119,10 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
             callbackTest.recyclerViewHaveData();
             callbackTest = null;
         }
+        if (addRestaurant){
+            addRestaurant = false;
+            model.setMyRestaurantItem(adapter.getRestaurants());
+        }
     }
 
     @Override
@@ -152,7 +157,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             List<RestaurantItem> restaurantItems = model.getMyRestaurantItem();
             if (restaurantItems == null){
-                model.getMyPlaces(placesClient, false).observe(this, this::getRestaurantDetails);
+                model.getMyPlaces(placesClient, false, null).observe(this, this::getRestaurantDetails);
             } else {
                 adapter.setRestaurants(restaurantItems);
             }
@@ -251,6 +256,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         FetchPlaceRequest request = FetchPlaceRequest.newInstance(restaurant.getPlaceID(), PLACES_FIELDS);
         placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
             Place place = response.getPlace();
+            addRestaurant = true;
             getRestaurantDetails(Collections.singletonList(place));
         }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
     }

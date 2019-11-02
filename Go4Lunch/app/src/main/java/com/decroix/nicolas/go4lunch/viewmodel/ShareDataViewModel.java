@@ -3,6 +3,7 @@ package com.decroix.nicolas.go4lunch.viewmodel;
 import android.content.Context;
 import android.location.Location;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -20,10 +21,11 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.decroix.nicolas.go4lunch.api.PlacesClientHelper.PLACES_FIELDS;
 
-public class ShareDataViewModel extends ViewModel {
+public class ShareDataViewModel extends ViewModel{
 
     /**
      * Device location
@@ -58,7 +60,7 @@ public class ShareDataViewModel extends ViewModel {
     public LiveData<Location> getMyLocation(Context context, boolean reset) {
         if (myLocation == null) {
             myLocation = new MutableLiveData<>();
-            loadMyLocation(context);
+            //loadMyLocation(context);
         } else if (reset){
             loadMyLocation(context);
         }
@@ -84,11 +86,11 @@ public class ShareDataViewModel extends ViewModel {
      * @param reset True to recall google place api
      * @return List of restaurant
      */
-    public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset) {
+    public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset,@Nullable Location location) {
         if (myRestaurants == null) {
             myRestaurants = new MutableLiveData<>();
             loadMyPlaces(placesClient);
-        } else if (reset){
+        } else if (reset && !Objects.equals(myLocation.getValue(), location)){
             loadMyPlaces(placesClient);
         }
         return myRestaurants;
@@ -100,12 +102,8 @@ public class ShareDataViewModel extends ViewModel {
      */
     private void loadMyUser(String uid) {
         UserHelper.getUserListener(uid).addSnapshotListener((snapshot, e) -> {
-            if (snapshot != null) {
-                User user = snapshot.toObject(User.class);
-                myUser.setValue(user);
-            } else {
-                myUser.setValue(null);
-            }
+            if (snapshot != null)
+            myUser.setValue(snapshot.toObject(User.class));
         });
     }
 
@@ -116,6 +114,7 @@ public class ShareDataViewModel extends ViewModel {
     private void loadMyLocation(Context context) {
         LocationServices.getFusedLocationProviderClient(context).getLastLocation().addOnCompleteListener(locationTask -> {
             if (locationTask.isSuccessful()) {
+                if (myLocation.getValue() != locationTask.getResult())
                 myLocation.setValue(locationTask.getResult());
             }
         });

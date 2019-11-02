@@ -18,6 +18,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
@@ -62,11 +64,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private final WorkmatesFragment workmatesFragment = new WorkmatesFragment();
     private final ChatFragment chatFragment = new ChatFragment();
     private Fragment activeFragment = mapViewFragment;
-
-    /**
-     * Header of the navigation view
-     */
-    private HeaderViewHolder mHeaderViewHolder;
 
     /**
      * Last known location of the device
@@ -155,10 +152,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void updateUI() {
         if (!isCurrentUserLogged()) {
             startActivity(AuthActivity.newIntent(this));
-        } else {
-            Objects.requireNonNull(getCurrentUser(), getString(R.string.rnn_user_must_not_be_null));
-            mHeaderViewHolder.fillView(getCurrentUser().getPhotoUrl(), getCurrentUser().getDisplayName(),
-                    getCurrentUser().getEmail());
         }
         if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
             if (myUser == null){
@@ -215,7 +208,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private void configNavigationView() {
         mNavigationView.setNavigationItemSelectedListener(this);
         View header = mNavigationView.getHeaderView(0);
-        mHeaderViewHolder = new HeaderViewHolder(header);
+        HeaderViewHolder mHeaderViewHolder = new HeaderViewHolder(header);
+        Objects.requireNonNull(getCurrentUser(), getString(R.string.rnn_user_must_not_be_null));
+        Glide.with(this)
+                .load(getCurrentUser().getPhotoUrl())
+                .apply(RequestOptions.circleCropTransform())
+                .into(mHeaderViewHolder.mAvatar);
+        mHeaderViewHolder.mName.setText(getCurrentUser().getDisplayName());
+        mHeaderViewHolder.mEmail.setText(getCurrentUser().getEmail());
     }
 
     /**
@@ -307,6 +307,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         activeFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     /**
