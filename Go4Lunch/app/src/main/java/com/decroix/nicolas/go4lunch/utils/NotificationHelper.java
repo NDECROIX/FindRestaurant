@@ -53,9 +53,8 @@ public class NotificationHelper {
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, minutes);
-        //SystemClock.elapsedRealtime() +
         if (alarmMgr != null) {
-            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + calendar.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY, alarmIntent);
         }
     }
