@@ -35,7 +35,7 @@ import static org.junit.Assert.fail;
 @RunWith(AndroidJUnit4ClassRunner.class)
 public class MessageHelperTest {
     @Rule
-    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class);
+    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class, false, true);
 
     /**
      * Required for asynchronous task
@@ -144,7 +144,7 @@ public class MessageHelperTest {
     public void deleteMessagesFromFirebase(List<String> messagesTest) {
         getMessagesFromUserSender();
         taskIsSuccessful = true; // all call take the same boolean for return false if one fail
-        for (String messageID : this.messagesTest) {
+        for (String messageID : messagesTest) {
             callOnApiIdl.increment();
             MessageHelper.deleteMessage(messageID).addOnCompleteListener(task -> {
                 taskIsSuccessful = task.isSuccessful() && taskIsSuccessful;

@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 public class StorageHelperTest {
 
     @Rule
-    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class);
+    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class, false, true);
 
     /**
      * Required for asynchronous task
@@ -85,6 +85,7 @@ public class StorageHelperTest {
 
     /**
      * Create uri to perform test
+     *
      * @return Image path
      */
     @DataPoint
@@ -110,9 +111,9 @@ public class StorageHelperTest {
      * Add a image to firebase storage
      */
     @DataPoint
-    public void putStorageOnFirebase(){
+    public void putStorageOnFirebase() {
         callOnApiIdl.increment();
-        StorageHelper.putFileOnFirebaseStorage(UUID_STORAGE, Uri.parse(uriTest)).addOnCompleteListener(task -> {
+        StorageHelper.putFileOnFirebaseStorage(UUID_STORAGE, UUID_STORAGE, Uri.parse(uriTest)).addOnCompleteListener(task -> {
             taskIsSuccessful = task.isSuccessful();
             callOnApiIdl.decrement();
         });
@@ -123,9 +124,9 @@ public class StorageHelperTest {
      * Remove a image from firebase storage
      */
     @DataPoint
-    public void removeFileFromFirebaseStorage(){
+    public void removeFileFromFirebaseStorage() {
         callOnApiIdl.increment();
-        StorageHelper.deleteFileFromFirebaseStorage(UUID_STORAGE).addOnCompleteListener(task -> {
+        StorageHelper.deleteFilesFromFirebaseStorage(UUID_STORAGE).addOnCompleteListener(task -> {
             taskIsSuccessful = task.isSuccessful();
             callOnApiIdl.decrement();
         });
@@ -133,11 +134,11 @@ public class StorageHelperTest {
     }
 
     /**
-     *  Test putFileOnFirebaseStorage() from StorageHelper
-     *  Add a image to firebase storage
+     * Test putFileOnFirebaseStorage() from StorageHelper
+     * Add a image to firebase storage
      */
     @Test
-    public void testPutFileOnFirebaseStorage(){
+    public void testPutFileOnFirebaseStorage() {
         putStorageOnFirebase();
         assertTrue("File put on storage", taskIsSuccessful);
         removeFileFromFirebaseStorage();
@@ -148,7 +149,7 @@ public class StorageHelperTest {
      * Removes a file from firebase storage
      */
     @Test
-    public void testRemoveFileFromFirebaseStorage(){
+    public void testRemoveFileFromFirebaseStorage() {
         putStorageOnFirebase();
         removeFileFromFirebaseStorage();
         assertTrue("Remove file from FirebaseStorage ", taskIsSuccessful);
@@ -159,10 +160,10 @@ public class StorageHelperTest {
      * Retrieves the url of an image from firebase storage
      */
     @Test
-    public void testGetUrlPictureFromFirebaseStorage(){
+    public void testGetUrlPictureFromFirebaseStorage() {
         putStorageOnFirebase();
         callOnApiIdl.increment();
-        StorageHelper.getUrlPicture(UUID_STORAGE).addOnCompleteListener(task -> {
+        StorageHelper.getUrlPicture(UUID_STORAGE, UUID_STORAGE).addOnCompleteListener(task -> {
             taskIsSuccessful = task.isSuccessful() && task.getResult() != null;
             callOnApiIdl.decrement();
         });

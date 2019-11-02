@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4ClassRunner.class)
 public class RestaurantHelperTest {
     @Rule
-    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class);
+    public final ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class, false, true);
 
     /**
      * Required for asynchronous task
