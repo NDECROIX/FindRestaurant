@@ -28,7 +28,7 @@
     <!-- SEARCH VIEW -->
     <string name="search_view_hint_restaurants">Search restaurants</string>
     <string name="search_view_hint_workmates">Search workmates</string>
-    <string name="search_view_speech_prompt" translatable="false">speech Prompt</string>
+    <string name="search_view_speech_prompt" translatable="false">Speech Prompt</string>
     <string name="search_view_speech_not_supported">Speech not supported</string>
 
     <!-- NOTIFICATION -->
@@ -78,10 +78,10 @@
     <string name="not_yet_chosen">You have not yet chosen!</string>
 
     <!-- DETAIL ACTIVITY -->
-    <string name="no_website">don\'t have website</string>
+    <string name="no_website">\u0020don\'t have website</string>
     <string name="unknown_phone_number">Phone number unknown</string>
     <string name="restaurant_already_added">Restaurant already added</string>
-    <string name="restaurant_added_to_the_favorites">has been added to the favorites</string>
+    <string name="restaurant_added_to_the_favorites">\u0020has been added to the favorites</string>
     <string name="btn_call">CALL</string>
     <string name="btn_like">LIKE</string>
     <string name="btn_website">WEBSITE</string>
