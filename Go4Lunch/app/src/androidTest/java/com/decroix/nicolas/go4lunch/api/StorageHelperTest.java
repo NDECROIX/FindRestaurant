@@ -15,6 +15,7 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.StorageReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -126,7 +127,12 @@ public class StorageHelperTest {
     @DataPoint
     public void removeFileFromFirebaseStorage() {
         callOnApiIdl.increment();
-        StorageHelper.deleteFileFromFirebaseStorage(UUID_STORAGE).addOnCompleteListener(task -> {
+        StorageHelper.getStorageReference(UUID_STORAGE).listAll().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null){
+                for (StorageReference reference : task.getResult().getItems()) {
+                    StorageHelper.deleteFileFromFirebaseStorage(reference.getPath());
+                }
+            }
             taskIsSuccessful = task.isSuccessful();
             callOnApiIdl.decrement();
         });
