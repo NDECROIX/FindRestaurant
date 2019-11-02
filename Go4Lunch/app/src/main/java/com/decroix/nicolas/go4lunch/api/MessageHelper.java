@@ -36,7 +36,7 @@ public class MessageHelper {
     }
 
     public static Query getMessageFromUserSender(String userSenderID) {
-        return MessageHelper.getMessageCollection().whereArrayContains("userSenderID", userSenderID);
+        return MessageHelper.getMessageCollection().whereEqualTo("userSenderID", userSenderID);
     }
 
     public static Task<Void> deleteMessage(String messageID) {

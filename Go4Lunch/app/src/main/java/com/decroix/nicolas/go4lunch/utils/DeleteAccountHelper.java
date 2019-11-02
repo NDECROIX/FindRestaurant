@@ -9,10 +9,9 @@ import com.decroix.nicolas.go4lunch.api.StorageHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -48,36 +47,24 @@ public class DeleteAccountHelper {
      *
      * @param context      App context
      * @param firebaseUser Firebase user
-     * @param email        User email
-     * @param password     User Password
      */
-    public void deleteAccount(Context context, User user, FirebaseUser firebaseUser, String email, String password) {
+    public void deleteAccount(Context context, User user, FirebaseUser firebaseUser) {
         this.context = context;
         mUser = firebaseUser;
-        // Get auth credentials from the user for re-authentication. The example below shows
-        // email and password credentials but there are multiple possible providers,
-        // such as GoogleAuthProvider or FacebookAuthProvider.
-        AuthCredential credential = EmailAuthProvider
-                .getCredential(email, password);
-        // Prompt the user to re-provide their sign-in credentials
-        mUser.reauthenticate(credential)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        getUserRestaurant(user);
-                    } else {
-                        callback.failureToDeleteUser(context.getString(R.string.failure_email_password));
-                    }
-                });
+        if (user != null){
+            getUserRestaurant(user);
+        }
     }
 
     /**
      * Check if there is a restaurant where he/she has registered
      */
     private void getUserRestaurant(User user) {
-        if (user != null && user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
+        if (user.getLunchRestaurantID() != null && !user.getLunchRestaurantID().isEmpty()) {
             deleteUserFromRestaurant(user);
         } else {
-            deleteMessages();
+            deleteMessages(user);
+
         }
     }
 
@@ -90,22 +77,25 @@ public class DeleteAccountHelper {
         RestaurantHelper.removeUserFromList(user.getLunchRestaurantID(), user)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null) {
-                        deleteMessages();
+                        deleteMessages(user);
                     }
                 })
                 .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_remove_user_from_list)));
     }
 
-    private void deleteMessages() {
-        MessageHelper.getMessageFromUserSender(mUser.getUid()).get().addOnSuccessListener(result -> {
+    private void deleteMessages(User user) {
+        MessageHelper.getMessageFromUserSender(user.getUid()).get().addOnSuccessListener(result -> {
             List<DocumentSnapshot> messages = result.getDocuments();
             for (DocumentSnapshot message : messages) {
                 MessageHelper.deleteMessage(message.getId())
                         .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_messages)));
-                StorageHelper.deleteFilesFromFirebaseStorage(mUser.getUid())
-                        .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_files)));
             }
-            deleteUser();
+            StorageHelper.getStorageReference(user.getUid()).listAll().addOnSuccessListener(results -> {
+                for (StorageReference reference : results.getItems()) {
+                    StorageHelper.deleteFileFromFirebaseStorage(reference.getPath());
+                }
+                deleteUser();
+            }).addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_files)));
         }).addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_user)));
     }
 
@@ -115,7 +105,8 @@ public class DeleteAccountHelper {
     private void deleteUser() {
         UserHelper.deleteUser(mUser.getUid()).addOnSuccessListener(voidTask ->
                 mUser.delete().addOnSuccessListener(task ->
-                        callback.userDeleted()))
-                .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_user)));
+                        callback.userDeleted())
+                        .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_user)))
+                        .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_delete_user))));
     }
 }

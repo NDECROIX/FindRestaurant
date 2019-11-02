@@ -6,30 +6,27 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreferenceCompat;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreferenceCompat;
+
 import com.decroix.nicolas.go4lunch.R;
-import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.controller.activities.AuthActivity;
+import com.decroix.nicolas.go4lunch.controller.activities.SettingsActivity;
 import com.decroix.nicolas.go4lunch.utils.DeleteAccountHelper;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
-import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -50,8 +47,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     private Preference notificationTime;
     private Context context;
     private NotificationHelper notificationHelper;
-    private User myUser;
-    private FirebaseUser firebaseUser;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -67,21 +62,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
         notificationHelper = new NotificationHelper(context);
-        getCurrentUser();
         getPreference();
         configListener();
-    }
-
-    /**
-     * Get the user data from the ViewModel
-     */
-    private void getCurrentUser() {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        firebaseUser = mAuth.getCurrentUser();
-        if (firebaseUser != null){
-            ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
-            model.getMyUser(firebaseUser.getUid()).observe(this, user -> myUser = user);
-        }
     }
 
     /**
@@ -130,6 +112,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     /**
      * Change the time at which the notification should be displayed
+     *
      * @param newValue New time
      */
     private void updateNotificationTime(Object newValue) {
@@ -141,6 +124,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     /**
      * Handle the activation of the notification
+     *
      * @param activation false to disable
      */
     private void updateStatusNotification(Object activation) {
@@ -156,6 +140,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     /**
      * Display a time dialog
+     *
      * @param preference time to display
      */
     private void showTimeDialog(Preference preference) {
@@ -187,21 +172,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         Objects.requireNonNull(getActivity(), getString(R.string.rnn_context_cannot_be_null));
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.fragment_settings_delete_account_dialog, null);
-        final EditText editTextPassword = view.findViewById(R.id.delete_account_password);
-        final EditText editTextEmail = view.findViewById(R.id.delete_account_email);
+        final EditText summary = view.findViewById(R.id.alert_dialog_summary);
+        summary.setText(R.string.alert_dialog_delete_account_re_authenticate);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context)
                 .setView(view)
-                .setPositiveButton(getString(R.string.alert_dialog_delete_account_btn_delete), (dialogInterface, i) -> {
-                    String password = editTextPassword.getText().toString();
-                    String email = editTextEmail.getText().toString();
-                    if (!email.isEmpty() && !password.isEmpty()) {
-                        DeleteAccountHelper deleteAccountHelper = new DeleteAccountHelper(this);
-                        deleteAccountHelper.deleteAccount(getContext(), myUser, firebaseUser, email, password);
-                        dialogInterface.dismiss();
-                    } else {
-                        Toast.makeText(context, R.string.champ_empty, Toast.LENGTH_SHORT).show();
-                        dialogInterface.cancel();
-                    }
+                .setPositiveButton(getString(R.string.alert_dialog_re_authenticate_button), (dialogInterface, i) -> {
+                    FirebaseAuth.getInstance().signOut();
+                    startActivity(AuthActivity.newIntent(getActivity(), SettingsActivity.class.getName()));
                 })
                 .setNegativeButton(getString(R.string.alert_dialog_delete_account_btn_return), null);
         alertDialog.create().show();
@@ -217,6 +194,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public OnFailureListener failureToDeleteUser(String text) {
-        return e -> Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+        return e -> {
+            System.out.println("ERRRRRRORRRRR" + e);
+            Toast.makeText(context, text + e, Toast.LENGTH_SHORT).show();
+        };
     }
 }

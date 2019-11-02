@@ -1,15 +1,21 @@
 package com.decroix.nicolas.go4lunch.controller.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.models.User;
+import com.decroix.nicolas.go4lunch.utils.DeleteAccountHelper;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -22,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
@@ -37,7 +44,7 @@ import java.util.Objects;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class AuthActivity extends BaseActivity {
+public class AuthActivity extends BaseActivity implements DeleteAccountHelper.UserDeleteListener {
 
     /**
      * Google Connection Request Code
@@ -52,14 +59,16 @@ public class AuthActivity extends BaseActivity {
      */
     private CallbackManager mCallbackManager;
 
+    private boolean callBySettings;
+
     /**
      * Create an intent for this activity
      *
      * @param context Context of the application
      * @return Intent
      */
-    public static Intent newIntent(Context context) {
-        return new Intent(context, AuthActivity.class);
+    public static Intent newIntent(Context context, String caller) {
+        return new Intent(context, AuthActivity.class).putExtra(EXTRA_CALLER, caller);
     }
 
     @Override
@@ -96,15 +105,47 @@ public class AuthActivity extends BaseActivity {
     /**
      * Start main activity
      */
-    private void startMainActivity(){
-        startActivity(MainActivity.newIntent(this));
+    private void startMainActivity() {
+        if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), SettingsActivity.class.getName())
+                && !callBySettings) {
+            callBySettings = true;
+            deleteMyAccount();
+        } else {
+            startActivity(MainActivity.newIntent(this));
+        }
+    }
+
+    /**
+     * Delete the user account
+     * Pass null as the parent view because its going in the dialog layout
+     */
+    @SuppressLint("InflateParams")
+    private void deleteMyAccount() {
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View view = inflater.inflate(R.layout.fragment_settings_delete_account_dialog, null);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setPositiveButton(getString(R.string.alert_dialog_delete_account_btn_delete), (dialogInterface, i) -> {
+                    FirebaseAuth.getInstance().signOut();
+                    UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(result -> {
+                        DeleteAccountHelper deleteAccountHelper = new DeleteAccountHelper(this);
+                        User user = result.toObject(User.class);
+                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                        if (user != null && firebaseUser != null && user.getUid() != null) {
+                            deleteAccountHelper.deleteAccount(this, user, firebaseUser);
+                        }
+                    });
+                })
+                .setNegativeButton(getString(R.string.alert_dialog_delete_account_btn_return),
+                        (dialogInterface, i) -> startMainActivity());
+        alertDialog.create().show();
     }
 
     /**
      * Handle the click on the facebook button
      */
     @OnClick(R.id.auth_activity_sign_in_facebook)
-    public void signInWithFacebook(){
+    public void signInWithFacebook() {
         configFacebookSignIn();
     }
 
@@ -112,7 +153,7 @@ public class AuthActivity extends BaseActivity {
      * Handle the click on the google button
      */
     @OnClick(R.id.auth_activity_sign_in_google)
-    public void signInWithGoogle(){
+    public void signInWithGoogle() {
         signInGoogle();
     }
 
@@ -123,25 +164,25 @@ public class AuthActivity extends BaseActivity {
     /**
      * Configuring the facebook connection
      */
-    private void configFacebookSignIn(){
+    private void configFacebookSignIn() {
         FacebookSdk.sdkInitialize(getApplicationContext());
         mCallbackManager = CallbackManager.Factory.create();
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "public_profile"));
         LoginManager.getInstance().registerCallback(mCallbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
-                    public void onSuccess(LoginResult loginResult){
+                    public void onSuccess(LoginResult loginResult) {
                         // App code
                         handleFacebookAccessToken(loginResult.getAccessToken());
                     }
 
                     @Override
-                    public void onCancel(){
+                    public void onCancel() {
                         // App code
                     }
 
                     @Override
-                    public void onError(FacebookException exception){
+                    public void onError(FacebookException exception) {
                         // App code
                     }
                 });
@@ -177,13 +218,14 @@ public class AuthActivity extends BaseActivity {
     // GOOGLE
     //----------------
 
-    private void signInGoogle(){
+    private void signInGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     /**
      * Handle the sign-in google task
+     *
      * @param completedTask Task of the last step
      */
     private void handleSignInGoogle(Task<GoogleSignInAccount> completedTask) {
@@ -199,6 +241,7 @@ public class AuthActivity extends BaseActivity {
 
     /**
      * Create the user in firebase if this is the first connection
+     *
      * @param acct Google sign-in account
      */
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
@@ -223,12 +266,13 @@ public class AuthActivity extends BaseActivity {
 
     /**
      * Add the user in firestore
+     *
      * @param user Current user
      */
     private void createUserInFirestore(FirebaseUser user) {
         String uid = user.getUid();
         String name = user.getDisplayName();
-        String urlPicture = (user.getPhotoUrl() != null)? user.getPhotoUrl().toString() : null;
+        String urlPicture = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : null;
         User myUser = new User(uid, name, urlPicture, "", "", new ArrayList<>());
         UserHelper.createUser(myUser)
                 .addOnFailureListener(this.onFailureListener(getString(R.string.afl_get_user)));
@@ -236,15 +280,29 @@ public class AuthActivity extends BaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == RC_SIGN_IN){
+        if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInGoogle(task);
 
-        }else if (mCallbackManager != null && resultCode == RESULT_OK){
+        } else if (mCallbackManager != null && resultCode == RESULT_OK) {
             mCallbackManager.onActivityResult(requestCode, resultCode, data);
         } else {
             showMessage(getString(R.string.uac_connection_cancelled));
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void userDeleted() {
+        FirebaseAuth.getInstance().signOut();
+        Toast.makeText(this, R.string.msg_account_deleted, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public OnFailureListener failureToDeleteUser(String text) {
+        return e -> {
+            System.out.println("ERRRRRRORRRRR" + text + e);
+            Toast.makeText(this, text + e, Toast.LENGTH_SHORT).show();
+        };
     }
 }
