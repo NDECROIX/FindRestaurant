@@ -3,9 +3,12 @@ package com.decroix.nicolas.go4lunch.controller.activities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -41,10 +44,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class AuthActivity extends BaseActivity implements DeleteAccountHelper.UserDeleteListener {
+
+    @BindView(R.id.auth_activity_progress_bar)
+    ProgressBar progressBar;
 
     /**
      * Google Connection Request Code
@@ -52,7 +59,6 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
     private static final int RC_SIGN_IN = 123;
 
     private FirebaseAuth mAuth;
-    private GoogleSignInClient mGoogleSignInClient;
 
     /**
      * Callback manager for the facebook api
@@ -76,13 +82,11 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
+        progressBar.bringToFront();
+        progressBar.getIndeterminateDrawable().setColorFilter(
+                Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN);
         // Get an instance of firebase
         mAuth = FirebaseAuth.getInstance();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     @Override
@@ -111,6 +115,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
             callBySettings = true;
             deleteMyAccount();
         } else {
+            progressBar.setVisibility(View.GONE);
             startActivity(MainActivity.newIntent(this));
         }
     }
@@ -146,7 +151,10 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
      */
     @OnClick(R.id.auth_activity_sign_in_facebook)
     public void signInWithFacebook() {
-        configFacebookSignIn();
+        if (progressBar.getVisibility() == View.GONE){
+            progressBar.setVisibility(View.VISIBLE);
+            configFacebookSignIn();
+        }
     }
 
     /**
@@ -154,12 +162,11 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
      */
     @OnClick(R.id.auth_activity_sign_in_google)
     public void signInWithGoogle() {
-        signInGoogle();
+        if (progressBar.getVisibility() == View.GONE){
+            progressBar.setVisibility(View.VISIBLE);
+            signInGoogle();
+        }
     }
-
-    //----------------
-    // FACEBOOK
-    //----------------
 
     /**
      * Configuring the facebook connection
@@ -207,6 +214,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
                         }
                         startMainActivity();
                     } else {
+                        progressBar.setVisibility(View.GONE);
                         // If sign in fails, display a message to the user.
                         Snackbar.make(findViewById(R.id.auth_activity_constraint_layout),
                                 getString(R.string.error_auth_failed), Snackbar.LENGTH_SHORT).show();
@@ -214,11 +222,15 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
                 });
     }
 
-    //----------------
-    // GOOGLE
-    //----------------
-
+    /**
+     * Configures the google sign in options and start a google intent
+     */
     private void signInGoogle() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -236,6 +248,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
             }
         } catch (ApiException e) {
             e.printStackTrace();
+            progressBar.setVisibility(View.GONE);
         }
     }
 
@@ -257,6 +270,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
                         }
                         startMainActivity();
                     } else {
+                        progressBar.setVisibility(View.GONE);
                         // If sign in fails, display a message to the user.
                         Snackbar.make(findViewById(R.id.auth_activity_constraint_layout),
                                 getString(R.string.error_auth_failed), Snackbar.LENGTH_SHORT).show();
@@ -283,10 +297,10 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInGoogle(task);
-
         } else if (mCallbackManager != null && resultCode == RESULT_OK) {
             mCallbackManager.onActivityResult(requestCode, resultCode, data);
         } else {
+            progressBar.setVisibility(View.GONE);
             showMessage(getString(R.string.uac_connection_cancelled));
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -294,15 +308,14 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
 
     @Override
     public void userDeleted() {
+        progressBar.setVisibility(View.GONE);
         FirebaseAuth.getInstance().signOut();
         Toast.makeText(this, R.string.msg_account_deleted, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public OnFailureListener failureToDeleteUser(String text) {
-        return e -> {
-            System.out.println("ERRRRRRORRRRR" + text + e);
-            Toast.makeText(this, text + e, Toast.LENGTH_SHORT).show();
-        };
+        progressBar.setVisibility(View.GONE);
+        return e -> Toast.makeText(this, text + e, Toast.LENGTH_SHORT).show();
     }
 }
