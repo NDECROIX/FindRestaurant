@@ -1,7 +1,6 @@
 package com.decroix.nicolas.go4lunch.controller.fragments;
 
-
-import android.location.Location;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,27 +8,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.test.TestRecyclerView;
 import com.decroix.nicolas.go4lunch.view.adapters.WorkmatesRecyclerViewAdapter;
-import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.FetchPhotoRequest;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -50,6 +46,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
     private WorkmatesRecyclerViewAdapter adapter;
     private PlacesClient placesClient;
     private List<User> myWorkmates;
+    private DetailActivity.StartDetailActivity startDetailActivityCallback;
 
     /**
      * Required to test the recycler view
@@ -66,6 +63,12 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
         Places.initialize(getFragmentContext(), BuildConfig.ApiKey);
         placesClient = Places.createClient(getFragmentContext());
         myWorkmates = new ArrayList<>();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        startDetailActivityCallback = (DetailActivity.StartDetailActivity) context;
     }
 
     @Override
@@ -123,39 +126,7 @@ public class WorkmatesFragment extends ToolbarAutocomplete implements WorkmatesR
 
     @Override
     public void onClickUser(String restaurant) {
-        getPlaceDetails(restaurant);
-    }
-
-    /**
-     * Get details of the restaurant whose ID is passed in parameter
-     *
-     * @param id restaurant id
-     */
-    private void getPlaceDetails(String id) {
-        ShareDataViewModel model = ViewModelProviders.of(this).get(ShareDataViewModel.class);
-        Location myLocation = model.getMyLocation(getActivity(), false).getValue();
-
-        FetchPlaceRequest request = FetchPlaceRequest.newInstance(id, PLACE_FIELDS);
-
-        placesClient.fetchPlace(request).addOnSuccessListener(response -> {
-            Place place = response.getPlace();
-            if (place.getTypes() != null && place.getTypes().contains(Place.Type.RESTAURANT)) {
-                if (place.getPhotoMetadatas() != null) {
-                    FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
-                            .setMaxWidth(500)
-                            .setMaxHeight(250)
-                            .build();
-
-                    placesClient
-                            .fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
-                            startActivity(DetailActivity
-                                    .newIntent(getContext(), place, fetchPhotoResponse.getBitmap(), myLocation)))
-                            .addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                } else {
-                    startActivity(DetailActivity.newIntent(getContext(), place, null, myLocation));
-                }
-            }
-        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+        PlacesClientHelper.startDetailActivity(placesClient, restaurant, startDetailActivityCallback);
     }
 
     //-------------------------------------------

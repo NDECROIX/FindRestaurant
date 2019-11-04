@@ -18,8 +18,10 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
+import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
@@ -37,7 +39,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -60,10 +61,6 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class MapViewFragment extends ToolbarAutocomplete
         implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener {
 
-    public interface MapViewFragmentInterface {
-        void onClickRestaurantMarker(Place restaurant, @Nullable Bitmap bitmap);
-    }
-
     @BindView(R.id.fragment_map_view_fab)
     FloatingActionButton fab;
 
@@ -72,10 +69,10 @@ public class MapViewFragment extends ToolbarAutocomplete
 
     private PlacesClient placesClient;
     private GoogleMap mMap;
-    private MapViewFragmentInterface callbackRestaurantListener;
     private List<Marker> markers;
     private ShareDataViewModel model;
     private User myUser;
+    private DetailActivity.StartDetailActivity startDetailActivityCallback;
 
     public MapViewFragment() {
     }
@@ -104,7 +101,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        callbackRestaurantListener = (MapViewFragmentInterface) context;
+        startDetailActivityCallback = (DetailActivity.StartDetailActivity) context;
         model = ViewModelProviders.of((MainActivity) context).get(ShareDataViewModel.class);
     }
 
@@ -142,35 +139,6 @@ public class MapViewFragment extends ToolbarAutocomplete
      */
     private void updateMapStyle() {
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getFragmentContext(), R.raw.style_json));
-    }
-
-    /**
-     * Get detail of the restaurant whose ID is passed as a parameter
-     *
-     * @param id restaurant ID
-     */
-    private void getRestaurantDetail(String id) {
-
-        FetchPlaceRequest request = FetchPlaceRequest.newInstance(id, PLACE_FIELDS);
-
-        placesClient.fetchPlace(request).addOnSuccessListener(response -> {
-            Place place = response.getPlace();
-            List<Place.Type> types = place.getTypes();
-            if (types != null && types.contains(Place.Type.RESTAURANT)) {
-                if (place.getPhotoMetadatas() != null) {
-                    FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
-                            .setMaxWidth(500)
-                            .setMaxHeight(250)
-                            .build();
-
-                    placesClient.fetchPhoto(photoRequest).addOnSuccessListener(fetchPhotoResponse ->
-                            callbackRestaurantListener.onClickRestaurantMarker(place, fetchPhotoResponse.getBitmap()))
-                            .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                } else {
-                    callbackRestaurantListener.onClickRestaurantMarker(place, null);
-                }
-            }
-        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
     }
 
     /**
@@ -258,7 +226,7 @@ public class MapViewFragment extends ToolbarAutocomplete
     public boolean onMarkerClick(@NonNull Marker marker) {
         Place place = (Place) marker.getTag();
         if (place != null) {
-            getRestaurantDetail(((Place) marker.getTag()).getId());
+            PlacesClientHelper.startDetailActivity(placesClient, place.getId(), startDetailActivityCallback);
             return true;
         }
         return false;

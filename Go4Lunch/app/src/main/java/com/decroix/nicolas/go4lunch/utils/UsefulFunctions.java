@@ -52,10 +52,14 @@ public class UsefulFunctions {
         int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
         Period period = null;
         if (openingHours.getPeriods().size() > 0){
-            day = (openingHours.getPeriods().size() > day) ? day : 0;
-            period = openingHours.getPeriods().get(day);
+            for (int i = 0; i < openingHours.getPeriods().size() ; i++){
+                period = openingHours.getPeriods().get(i);
+                if (period.getOpen() != null && period.getOpen().getDay().equals(DayOfWeek.values()[i])){
+                    break;
+                }
+            }
         }
-        if (context != null && period != null && period.getOpen() != null && period.getClose() != null) {
+        if (context != null && period != null && period.getClose() != null) {
             DateFormat dfTime = new SimpleDateFormat(context.getString(R.string.date_format), Locale.FRANCE);
             // if the day is a Sunday and the time is 12 then the restaurant is open 24/7
             if (period.getOpen().getDay().compareTo(DayOfWeek.SUNDAY) == 0 && period.getOpen().getTime().getHours() == 0) {

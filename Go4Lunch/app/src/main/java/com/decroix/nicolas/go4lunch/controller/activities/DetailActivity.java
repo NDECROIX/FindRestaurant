@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
@@ -26,7 +27,9 @@ import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.utils.NotificationHelper;
 import com.decroix.nicolas.go4lunch.view.adapters.DetailActivityRecyclerViewAdapter;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -46,6 +49,10 @@ import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours
  * Manages the registration of a user And shows the registered users on the restaurant
  */
 public class DetailActivity extends BaseActivity {
+
+    public interface StartDetailActivity {
+        void startDetailActivity(Place place, Bitmap bitmap);
+    }
 
     @BindView(R.id.activity_detail_toolbar)
     Toolbar toolbar;
@@ -70,7 +77,7 @@ public class DetailActivity extends BaseActivity {
 
     private Place placeRestaurant;
     private User myUser;
-    private PlacesClientHelper placesClientHelper;
+    private PlacesClient placesClient;
 
     /**
      * Create an intent of this class
@@ -169,11 +176,12 @@ public class DetailActivity extends BaseActivity {
      */
     @OnClick(R.id.detail_activity_web_btn)
     public void openTheRestaurantWebsite() {
-        if (placesClientHelper == null) {
-            placesClientHelper = new PlacesClientHelper(this);
+        if (placesClient == null){
+            Places.initialize(this, BuildConfig.ApiKey);
+            placesClient = Places.createClient(this);
         }
         if (placeRestaurant.getId() != null) {
-            placesClientHelper.getWebsiteFromPlace(placeRestaurant.getId()).addOnSuccessListener(response -> {
+            PlacesClientHelper.getWebsiteFromPlace(placesClient, placeRestaurant.getId()).addOnSuccessListener(response -> {
                 Place place = response.getPlace();
                 if (place.getWebsiteUri() != null) {
                     startActivity(new Intent(Intent.ACTION_VIEW, place.getWebsiteUri()));
@@ -204,11 +212,12 @@ public class DetailActivity extends BaseActivity {
      */
     @OnClick(R.id.detail_activity_btn_call)
     public void callRestaurantBtn() {
-        if (placesClientHelper == null) {
-            placesClientHelper = new PlacesClientHelper(this);
+        if (placesClient == null){
+            Places.initialize(this, BuildConfig.ApiKey);
+            placesClient = Places.createClient(this);
         }
         if (placeRestaurant.getId() != null) {
-            placesClientHelper.getPhoneFromPlace(placeRestaurant.getId()).addOnSuccessListener(response -> {
+            PlacesClientHelper.getPhoneFromPlace(placesClient, placeRestaurant.getId()).addOnSuccessListener(response -> {
                 if  (response != null){
                     Place place = response.getPlace();
                     if (place.getPhoneNumber() != null) {

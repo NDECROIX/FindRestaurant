@@ -19,29 +19,25 @@ import java.util.List;
 
 public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<WorkmatesViewHolder> {
 
-    public interface OnClickUserListener{
+    public interface OnClickUserListener {
         void onClickUser(String restaurant);
     }
 
     private final List<User> users;
     private final OnClickUserListener callback;
 
-    public List<User> getUsers() {
-        return users;
-    }
-
     public WorkmatesRecyclerViewAdapter(OnClickUserListener callback) {
         this.callback = callback;
         this.users = new ArrayList<>();
     }
 
-    public void updateUsersList(List<User> users){
+    public void updateUsersList(List<User> users) {
         this.users.clear();
         this.users.addAll(users);
         notifyDataSetChanged();
     }
 
-    public void addUser(User user){
+    public void addUser(User user) {
         users.add(user);
         notifyDataSetChanged();
     }
@@ -70,7 +66,7 @@ public class WorkmatesRecyclerViewAdapter extends RecyclerView.Adapter<Workmates
                     .into(holder.workmatePicture);
 
         holder.workmateDesc.setText(user.getUsername());
-        if (user.getLunchRestaurantName() != null && !user.getLunchRestaurantName().isEmpty()){
+        if (user.getLunchRestaurantName() != null && !user.getLunchRestaurantName().isEmpty()) {
             holder.workmateDesc.append(" (" + user.getLunchRestaurantName() + ")");
             holder.workmateDesc.setTextColor(Color.parseColor("#000000"));
             holder.itemView.setOnClickListener(v -> callback.onClickUser(user.getLunchRestaurantID()));

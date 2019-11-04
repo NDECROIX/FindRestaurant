@@ -26,6 +26,7 @@ import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
+import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.RestaurantItem;
 import com.decroix.nicolas.go4lunch.models.User;
@@ -71,14 +72,14 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
 
     private PlacesClient placesClient;
     private RestaurantRecyclerViewAdapter adapter;
-    private RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener callback;
+    private DetailActivity.StartDetailActivity startDetailActivityCallback;
     private ShareDataViewModel model;
     private boolean addRestaurant;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        callback = (RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener) context;
+        startDetailActivityCallback = (DetailActivity.StartDetailActivity) context;
         model = ViewModelProviders.of((FragmentActivity) context).get(ShareDataViewModel.class);
     }
 
@@ -103,14 +104,15 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     private void configRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(new DividerItemDecoration(getFragmentContext(), DividerItemDecoration.VERTICAL));
-        adapter = new RestaurantRecyclerViewAdapter(callback);
+        adapter = new RestaurantRecyclerViewAdapter(startDetailActivityCallback);
         recyclerView.setAdapter(adapter);
     }
 
     /**
      * Add restaurant in recycler view
-     * @param place restaurant
-     * @param picture restaurant image
+     *
+     * @param place         restaurant
+     * @param picture       restaurant image
      * @param workmateCount number of workmate on this restaurant
      */
     private void addRestaurantInRecyclerView(Place place, Bitmap picture, int workmateCount) {
@@ -119,7 +121,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
             callbackTest.recyclerViewHaveData();
             callbackTest = null;
         }
-        if (addRestaurant){
+        if (addRestaurant) {
             addRestaurant = false;
             model.setMyRestaurantItem(adapter.getRestaurants());
         }
@@ -156,7 +158,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
     private void getCurrentRestaurants() {
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             List<RestaurantItem> restaurantItems = model.getMyRestaurantItem();
-            if (restaurantItems == null){
+            if (restaurantItems == null) {
                 model.getMyPlaces(placesClient, false, null).observe(this, this::getRestaurantDetails);
             } else {
                 adapter.setRestaurants(restaurantItems);
@@ -168,6 +170,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
 
     /**
      * retrieve the details of each restaurant passed in parameter
+     *
      * @param placesId restaurants
      */
     private void getRestaurantDetails(List<Place> placesId) {
@@ -198,7 +201,8 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
 
     /**
      * Count the number of workmate on the restaurant passed in parameter
-     * @param place restaurant
+     *
+     * @param place  restaurant
      * @param bitmap restaurant picture
      */
     private void countWorkmates(@NonNull Place place, Bitmap bitmap) {
@@ -209,8 +213,8 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
                 if (restaurant != null) {
                     List<User> users = restaurant.getUsers();
                     workmateCount = restaurant.getUsers().size();
-                    for (User user : users){
-                        if (user.getUid().equals(getCurrentUserID())){
+                    for (User user : users) {
+                        if (user.getUid().equals(getCurrentUserID())) {
                             workmateCount -= 1;
                             break;
                         }
@@ -248,6 +252,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
 
     /**
      * Add the restaurant passed in parameter to the recycler view.
+     *
      * @param restaurant restaurant
      */
     @Override
@@ -263,11 +268,12 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
 
     /**
      * Required to test the recycler view
+     *
      * @param callbackTest callback on IdlingResource
      */
     @VisibleForTesting
     public void registerOnCallBackTest(TestRecyclerView callbackTest) {
-        if (adapter.getItemCount() > 0){
+        if (adapter.getItemCount() > 0) {
             callbackTest.recyclerViewHaveData();
         } else {
             this.callbackTest = callbackTest;

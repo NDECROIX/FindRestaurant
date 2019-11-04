@@ -1,7 +1,6 @@
 package com.decroix.nicolas.go4lunch.view.adapters;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
@@ -17,6 +16,7 @@ import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.models.RestaurantItem;
 import com.decroix.nicolas.go4lunch.utils.UsefulFunctions;
 import com.decroix.nicolas.go4lunch.view.holders.RestaurantViewHolder;
@@ -31,17 +31,14 @@ import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours
 
 public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<RestaurantViewHolder> {
 
-    public interface OnClickRestaurantItemListener {
-        void onClickRestaurant(Place place, Bitmap bitmap);
-    }
+    private DetailActivity.StartDetailActivity startDetailActivityCallback;
 
     private LatLng myLocation;
-    private final OnClickRestaurantItemListener callback;
     private final List<RestaurantItem> restaurants;
 
-    public RestaurantRecyclerViewAdapter(OnClickRestaurantItemListener callback) {
+    public RestaurantRecyclerViewAdapter(DetailActivity.StartDetailActivity callback) {
         this.restaurants = new ArrayList<>();
-        this.callback = callback;
+        this.startDetailActivityCallback = callback;
         this.myLocation = new LatLng(48.8583, 2.29448);
     }
 
@@ -98,13 +95,13 @@ public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<Restaura
             String hours = getOpeningHours(context, place.getOpeningHours());
             holder.restaurantOpen.setText(hours);
             if (hours.equals(context.getString(R.string.hours_closing_soon)) ||
-                    hours.equals(context.getString(R.string.hours_closing))){
+                    hours.equals(context.getString(R.string.hours_closing))) {
                 holder.restaurantOpen.setTextColor(Color.RED);
             } else {
                 holder.restaurantOpen.setTextColor(context.getResources().getColor(R.color.colorTextDefault));
             }
         }
-        holder.itemView.setOnClickListener(view -> callback.onClickRestaurant(place, picture));
+        holder.itemView.setOnClickListener(view -> startDetailActivityCallback.startDetailActivity(place, picture));
         if (picture != null) {
             holder.restaurantPicture.setVisibility(View.VISIBLE);
             Glide.with(holder.itemView)

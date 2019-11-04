@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.UserHelper;
@@ -31,10 +32,11 @@ import com.decroix.nicolas.go4lunch.controller.fragments.WorkmatesFragment;
 import com.decroix.nicolas.go4lunch.models.User;
 import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
 import com.decroix.nicolas.go4lunch.view.adapters.AutocompleteRecyclerViewAdapter;
-import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.view.holders.HeaderViewHolder;
 import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
+import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,7 +47,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener,
-        MapViewFragment.MapViewFragmentInterface, RestaurantRecyclerViewAdapter.OnClickRestaurantItemListener {
+        DetailActivity.StartDetailActivity {
 
     @BindView(R.id.activity_main_bottom_navigation)
     BottomNavigationView bottomNavigationView;
@@ -154,9 +156,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             startActivity(AuthActivity.newIntent(this, MainActivity.class.getName()));
         }
         if (Objects.equals(getIntent().getStringExtra(EXTRA_CALLER), AlarmReceiver.class.getName()) && !notificationCaller) {
-            if (myUser == null){
+            if (myUser == null) {
                 UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(task -> {
-                    myUser =(task != null)? task.toObject(User.class) : null;
+                    myUser = (task != null) ? task.toObject(User.class) : null;
                     notificationCaller = true;
                     displayUsersRestaurant();
                 });
@@ -314,23 +316,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * Get and start the detail activity with the restaurant of the user
      */
     private void displayUsersRestaurant() {
-        PlacesClientHelper placesClientHelper = new PlacesClientHelper(this);
+        Places.initialize(this, BuildConfig.ApiKey);
+        PlacesClient placesClient = Places.createClient(this);
         if (myUser != null && myUser.getLunchRestaurantID() != null && !myUser.getLunchRestaurantID().isEmpty()) {
-            // Get place detail from the Google place api
-            placesClientHelper.getPlaceDetails(myUser.getLunchRestaurantID()).addOnSuccessListener(place -> {
-                if (place != null) {
-                    Place myPlace = place.getPlace();
-                    if (myPlace.getPhotoMetadatas() != null) {
-                        // Get the restaurant picture if exist
-                        placesClientHelper.getBitmapFromPlace(myPlace.getPhotoMetadatas().get(0)).addOnSuccessListener(fetchPhotoResponse -> {
-                            if (fetchPhotoResponse != null)
-                                startDetailActivity(myPlace, fetchPhotoResponse.getBitmap());
-                        }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                    } else {
-                        startDetailActivity(myPlace, null);
-                    }
-                }
-            }).addOnFailureListener(this.onFailureListener(getString(R.string.afl_fetch_place)));
+            PlacesClientHelper.startDetailActivity(placesClient, myUser.getLunchRestaurantID(), this);
         } else {
             showMessage(getString(R.string.not_yet_chosen));
         }
@@ -342,17 +331,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * @param place  restaurant
      * @param bitmap restaurant's picture
      */
-    private void startDetailActivity(Place place, Bitmap bitmap) {
+    @Override
+    public void startDetailActivity(Place place, Bitmap bitmap) {
         startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
-    }
-
-    @Override
-    public void onClickRestaurantMarker(Place restaurant, Bitmap bitmap) {
-        startDetailActivity(restaurant, bitmap);
-    }
-
-    @Override
-    public void onClickRestaurant(Place place, Bitmap bitmap) {
-        startDetailActivity(place, bitmap);
     }
 }
