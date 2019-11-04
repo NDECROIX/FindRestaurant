@@ -25,7 +25,7 @@ import java.util.Objects;
 
 import static com.decroix.nicolas.go4lunch.api.PlacesClientHelper.PLACES_FIELDS;
 
-public class ShareDataViewModel extends ViewModel{
+public class ShareDataViewModel extends ViewModel {
 
     /**
      * Device location
@@ -53,15 +53,15 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Get the current device location
+     *
      * @param context App context
-     * @param reset True to recall the device location
+     * @param reset   True to recall the device location
      * @return My location
      */
     public LiveData<Location> getMyLocation(Context context, boolean reset) {
         if (myLocation == null) {
             myLocation = new MutableLiveData<>();
-            //loadMyLocation(context);
-        } else if (reset){
+        } else if (reset) {
             loadMyLocation(context);
         }
         return myLocation;
@@ -69,6 +69,7 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Get my user from Firebase database
+     *
      * @param uid User uid
      * @return My user
      */
@@ -82,15 +83,16 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Retrieves restaurant next my location
+     *
      * @param placesClient PlaceClient initialized
-     * @param reset True to recall google place api
+     * @param reset        True to recall google place api
      * @return List of restaurant
      */
-    public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset,@Nullable Location location) {
+    public LiveData<List<Place>> getMyPlaces(PlacesClient placesClient, boolean reset, @Nullable Location location) {
         if (myRestaurants == null) {
             myRestaurants = new MutableLiveData<>();
             loadMyPlaces(placesClient);
-        } else if (reset && !Objects.equals(myLocation.getValue(), location)){
+        } else if (reset && !Objects.equals(myLocation.getValue(), location)) {
             loadMyPlaces(placesClient);
         }
         return myRestaurants;
@@ -98,17 +100,19 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Call user data from firebase database
+     *
      * @param uid User uid
      */
     private void loadMyUser(String uid) {
         UserHelper.getUserListener(uid).addSnapshotListener((snapshot, e) -> {
             if (snapshot != null)
-            myUser.setValue(snapshot.toObject(User.class));
+                myUser.setValue(snapshot.toObject(User.class));
         });
     }
 
     /**
      * Recall the device location
+     *
      * @param context App context
      */
     private void loadMyLocation(Context context) {
@@ -122,6 +126,7 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Recall GooglePlace api to update restaurant
+     *
      * @param placesClient PlaceClient initialized
      */
     private void loadMyPlaces(PlacesClient placesClient) {
@@ -146,6 +151,7 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Save RestaurantItem in ShareDataViewModel
+     *
      * @param myRestaurantItem List of restaurant item
      */
     public void setMyRestaurantItem(List<RestaurantItem> myRestaurantItem) {
@@ -158,11 +164,12 @@ public class ShareDataViewModel extends ViewModel{
 
     /**
      * Return the last restaurant item list if unchanged else null
+     *
      * @return last restaurant item
      */
     public List<RestaurantItem> getMyRestaurantItem() {
         boolean notNull = myRestaurants.getValue() != null && restaurantsComparator != null;
-        if (notNull && restaurantsComparator.containsAll(myRestaurants.getValue()) && !restaurantsComparator.isEmpty()) {
+        if (notNull && restaurantsComparator.equals(myRestaurants.getValue()) && !restaurantsComparator.isEmpty()) {
             return myRestaurantItem;
         }
         return null;
