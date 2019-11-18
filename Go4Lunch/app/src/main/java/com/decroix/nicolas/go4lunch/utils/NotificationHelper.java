@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
 
 import androidx.preference.PreferenceManager;
 
@@ -13,6 +12,7 @@ import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.receiver.AlarmReceiver;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class NotificationHelper {
 
@@ -33,13 +33,13 @@ public class NotificationHelper {
         boolean notificationEnable = sharedPreferences
                 .getBoolean(context.getString(R.string.setting_key_notification), true);
 
-        if (!notificationEnable){
+        if (!notificationEnable) {
             return;
         }
-        
+
         String timeValue = sharedPreferences
                 .getString(context.getString(R.string.setting_key_notification_time), context.getString(R.string.notification_default_time));
-
+        timeValue = (timeValue == null) ? "12:00" : timeValue;
         String[] time = timeValue.split(":");
         int hours = Integer.parseInt(time[0]);
         int minutes = Integer.parseInt(time[1]);
@@ -49,12 +49,15 @@ public class NotificationHelper {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
         // Set the alarm to start at approximately hours:minutes
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
+        GregorianCalendar calendar = new GregorianCalendar();
         calendar.set(Calendar.HOUR_OF_DAY, hours);
         calendar.set(Calendar.MINUTE, minutes);
+        if (calendar.getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
         if (alarmMgr != null) {
-            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + calendar.getTimeInMillis(),
+            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY, alarmIntent);
         }
     }
@@ -63,7 +66,7 @@ public class NotificationHelper {
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmReceiver.class);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-        if (alarmMgr != null){
+        if (alarmMgr != null) {
             alarmMgr.cancel(alarmIntent);
         }
     }
