@@ -118,7 +118,7 @@ public class ShareDataViewModel extends ViewModel {
     private void loadMyLocation(Context context) {
         LocationServices.getFusedLocationProviderClient(context).getLastLocation().addOnCompleteListener(locationTask -> {
             if (locationTask.isSuccessful()) {
-                //if (myLocation.getValue() != locationTask.getResult())
+                if (myLocation.getValue() != locationTask.getResult())
                 myLocation.setValue(locationTask.getResult());
             }
         });
