@@ -3,7 +3,6 @@ package com.decroix.nicolas.go4lunch.controller.activities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -48,6 +47,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * Authentication management
+ */
 public class AuthActivity extends BaseActivity implements DeleteAccountHelper.UserDeleteListener {
 
     @BindView(R.id.auth_activity_progress_bar)
@@ -83,6 +85,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
         progressBar.bringToFront();
+        progressBar.setVisibility(View.GONE);
         progressBar.getIndeterminateDrawable().setColorFilter(
                 Color.WHITE, android.graphics.PorterDuff.Mode.SRC_IN);
         // Get an instance of firebase
@@ -103,7 +106,6 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) startMainActivity();
-
     }
 
     /**
@@ -130,17 +132,15 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
         final View view = inflater.inflate(R.layout.fragment_settings_delete_account_dialog, null);
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
                 .setView(view)
-                .setPositiveButton(getString(R.string.alert_dialog_delete_account_btn_delete), (dialogInterface, i) -> {
-                    FirebaseAuth.getInstance().signOut();
-                    UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(result -> {
-                        DeleteAccountHelper deleteAccountHelper = new DeleteAccountHelper(this);
-                        User user = result.toObject(User.class);
-                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                        if (user != null && firebaseUser != null && user.getUid() != null) {
-                            deleteAccountHelper.deleteAccount(this, user, firebaseUser);
-                        }
-                    });
-                })
+                .setPositiveButton(getString(R.string.alert_dialog_delete_account_btn_delete), (dialogInterface, i) ->
+                        UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(result -> {
+                    DeleteAccountHelper deleteAccountHelper = new DeleteAccountHelper(this);
+                    User user = result.toObject(User.class);
+                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                    if (user != null && firebaseUser != null && user.getUid() != null) {
+                        deleteAccountHelper.deleteAccount(this, user, firebaseUser);
+                    }
+                }))
                 .setNegativeButton(getString(R.string.alert_dialog_delete_account_btn_return),
                         (dialogInterface, i) -> startMainActivity());
         alertDialog.create().show();
@@ -151,7 +151,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
      */
     @OnClick(R.id.auth_activity_sign_in_facebook)
     public void signInWithFacebook() {
-        if (progressBar.getVisibility() == View.GONE){
+        if (progressBar.getVisibility() == View.GONE) {
             progressBar.setVisibility(View.VISIBLE);
             configFacebookSignIn();
         }
@@ -162,7 +162,7 @@ public class AuthActivity extends BaseActivity implements DeleteAccountHelper.Us
      */
     @OnClick(R.id.auth_activity_sign_in_google)
     public void signInWithGoogle() {
-        if (progressBar.getVisibility() == View.GONE){
+        if (progressBar.getVisibility() == View.GONE) {
             progressBar.setVisibility(View.VISIBLE);
             signInGoogle();
         }
