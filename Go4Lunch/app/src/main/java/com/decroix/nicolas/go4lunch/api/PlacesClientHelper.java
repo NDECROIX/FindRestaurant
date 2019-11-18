@@ -1,5 +1,7 @@
 package com.decroix.nicolas.go4lunch.api;
 
+import android.graphics.Bitmap;
+
 import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.model.Place;
@@ -16,6 +18,12 @@ import java.util.List;
  * class that allows the management of calls on the api google place
  */
 public class PlacesClientHelper {
+
+    public interface ReturnRestaurantDetail {
+        void restaurantDetail(Place restaurant, Bitmap imageRestaurant);
+
+        void onFailureListener(Exception e);
+    }
 
     /**
      * Array of all data field return by the find current place request
@@ -76,5 +84,36 @@ public class PlacesClientHelper {
                 }
             }
         });
+    }
+
+    /**
+     * retrieve the details of each restaurant passed in parameter
+     *
+     * @param placesId restaurants
+     */
+    public static void getRestaurantDetails(PlacesClient placesClient, List<Place> placesId, ReturnRestaurantDetail callback) {
+        if (placesId == null) {
+            return;
+        }
+        for (Place placeId : placesId) {
+            if (placeId != null && placeId.getId() != null) {
+                FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId.getId(), PLACE_FIELDS);
+                placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+                    Place place = response.getPlace();
+                    if (place.getPhotoMetadatas() != null) {
+                        FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
+                                .setMaxWidth(500)
+                                .setMaxHeight(250)
+                                .build();
+
+                        placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) ->
+                                callback.restaurantDetail(place, fetchPhotoResponse.getBitmap()))
+                                .addOnFailureListener(callback::onFailureListener);
+                    } else {
+                        callback.restaurantDetail(place, null);
+                    }
+                }).addOnFailureListener(callback::onFailureListener);
+            }
+        }
     }
 }

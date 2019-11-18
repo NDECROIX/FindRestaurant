@@ -33,11 +33,9 @@ public class StorageHelper {
 
     /**
      * Delete files from firebase storage
-     *
-     * @return Void task
      */
-    public static Task<Void> deleteFileFromFirebaseStorage(String path) {
-        return getStorageReference(path).delete();
+    public static void deleteFileFromFirebaseStorage(String path) {
+        getStorageReference(path).delete();
     }
 
     /**
