@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
+import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
@@ -36,7 +37,6 @@ import com.decroix.nicolas.go4lunch.view.adapters.RestaurantRecyclerViewAdapter;
 import com.decroix.nicolas.go4lunch.viewmodel.ShareDataViewModel;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
@@ -53,7 +53,8 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ListViewFragment extends ToolbarAutocomplete implements AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener {
+public class ListViewFragment extends ToolbarAutocomplete implements AutocompleteRecyclerViewAdapter.onClickAutocompleteResultListener,
+        PlacesClientHelper.ReturnRestaurantDetail {
 
     @BindView(R.id.fragment_list_recycler_view)
     RecyclerView recyclerView;
@@ -94,7 +95,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         View view = inflater.inflate(R.layout.fragment_list_view, container, false);
         ButterKnife.bind(this, view);
         configRecyclerView();
-        textViewIsEmpty.setVisibility(View.INVISIBLE);
+        textViewIsEmpty.setVisibility(View.VISIBLE);
         return view;
     }
 
@@ -159,13 +160,31 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
         if (EasyPermissions.hasPermissions(getFragmentContext(), ACCESS_FINE_LOCATION)) {
             List<RestaurantItem> restaurantItems = model.getMyRestaurantItem();
             if (restaurantItems == null) {
-                model.getMyPlaces(placesClient, false, null).observe(this, this::getRestaurantDetails);
+                model.getMyPlaces(placesClient, false, null).observe(this, restaurants -> {
+                    if (restaurants != null) {
+                        textViewIsEmpty.setVisibility(View.GONE);
+                        getRestaurantDetails(restaurants);
+                    } else {
+                        textViewIsEmpty.setVisibility(View.VISIBLE);
+                    }
+                });
             } else {
+                textViewIsEmpty.setVisibility(View.GONE);
                 adapter.setRestaurants(restaurantItems);
             }
         } else {
             getLocationPermission();
         }
+    }
+
+    @Override
+    public void restaurantDetail(Place restaurant, Bitmap imageRestaurant) {
+        countWorkmates(restaurant, imageRestaurant);
+    }
+
+    @Override
+    public void onFailureListener(Exception e) {
+        showMessage(getString(R.string.afl_get_restaurant));
     }
 
     /**
@@ -174,29 +193,7 @@ public class ListViewFragment extends ToolbarAutocomplete implements Autocomplet
      * @param placesId restaurants
      */
     private void getRestaurantDetails(List<Place> placesId) {
-        if (placesId == null) {
-            return;
-        }
-        for (Place placeId : placesId) {
-            if (placeId != null && placeId.getId() != null) {
-                FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId.getId(), PLACE_FIELDS);
-                placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
-                    Place place = response.getPlace();
-                    if (place.getPhotoMetadatas() != null) {
-                        FetchPhotoRequest photoRequest = FetchPhotoRequest.builder(place.getPhotoMetadatas().get(0))
-                                .setMaxWidth(500)
-                                .setMaxHeight(250)
-                                .build();
-
-                        placesClient.fetchPhoto(photoRequest).addOnSuccessListener((fetchPhotoResponse) ->
-                                countWorkmates(place, fetchPhotoResponse.getBitmap()))
-                                .addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_photo)));
-                    } else {
-                        countWorkmates(place, null);
-                    }
-                }).addOnFailureListener((exception) -> this.onFailureListener(getString(R.string.afl_fetch_place)));
-            }
-        }
+        PlacesClientHelper.getRestaurantDetails(placesClient, placesId, this);
     }
 
     /**
