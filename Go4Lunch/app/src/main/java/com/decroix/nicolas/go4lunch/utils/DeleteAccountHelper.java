@@ -75,12 +75,8 @@ public class DeleteAccountHelper {
      */
     private void deleteUserFromRestaurant(User user) {
         RestaurantHelper.removeUserFromList(user.getLunchRestaurantID(), user)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        deleteMessages(user);
-                    }
-                })
                 .addOnFailureListener(callback.failureToDeleteUser(context.getString(R.string.afl_remove_user_from_list)));
+        deleteMessages(user);
     }
 
     private void deleteMessages(User user) {
