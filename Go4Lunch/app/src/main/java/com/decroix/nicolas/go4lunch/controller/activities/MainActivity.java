@@ -126,9 +126,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * Start the first fragment "MapViewFragment"
      */
     private void startFragment() {
-        getSupportFragmentManager().beginTransaction()
+        this.getSupportFragmentManager().beginTransaction()
                 .add(R.id.activity_main_frame_layout, activeFragment)
-                .commit();
+                .commitNow();
     }
 
     /**
@@ -152,6 +152,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      * has been opened by a notification
      */
     private void updateUI() {
+        getSupportFragmentManager().beginTransaction().attach(activeFragment).commitNow();
         if (!isCurrentUserLogged()) {
             startActivity(AuthActivity.newIntent(this, MainActivity.class.getName()));
         }
@@ -286,9 +287,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 displayUsersRestaurant();
                 break;
             case R.id.activity_main_drawer_settings:
+                getSupportFragmentManager().beginTransaction().detach(activeFragment).commitNow();
                 startActivity(SettingsActivity.newIntent(this));
                 break;
             case R.id.activity_main_drawer_logout:
+                getSupportFragmentManager().beginTransaction().detach(activeFragment).commitNow();
                 logout();
                 break;
             default:
@@ -333,6 +336,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
      */
     @Override
     public void startDetailActivity(Place place, Bitmap bitmap) {
+        getSupportFragmentManager().beginTransaction().detach(activeFragment).commitNow();
         startActivity(DetailActivity.newIntent(this, place, bitmap, mLastKnownLocation));
     }
 }
