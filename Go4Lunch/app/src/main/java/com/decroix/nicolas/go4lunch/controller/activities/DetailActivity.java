@@ -33,6 +33,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -104,6 +105,7 @@ public class DetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
+        configRecyclerView(new ArrayList<User>());
         configToolbar();
         getUserFromFirebase();
         displayPlaceDetails();
@@ -130,7 +132,6 @@ public class DetailActivity extends BaseActivity {
                 if (restaurant != null && restaurant.getUsers() != null) {
                     List<User> users = restaurant.getUsers();
                     updateFAB(users);
-                    users.remove(myUser);
                     configRecyclerView(users);
                 }
             }
@@ -158,6 +159,7 @@ public class DetailActivity extends BaseActivity {
      * @param users User list
      */
     private void configRecyclerView(List<User> users) {
+        users.remove(myUser);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new DetailActivityRecyclerViewAdapter(users));
     }
@@ -176,7 +178,7 @@ public class DetailActivity extends BaseActivity {
      */
     @OnClick(R.id.detail_activity_web_btn)
     public void openTheRestaurantWebsite() {
-        if (placesClient == null){
+        if (placesClient == null) {
             Places.initialize(this, BuildConfig.ApiKey);
             placesClient = Places.createClient(this);
         }
@@ -212,13 +214,13 @@ public class DetailActivity extends BaseActivity {
      */
     @OnClick(R.id.detail_activity_btn_call)
     public void callRestaurantBtn() {
-        if (placesClient == null){
+        if (placesClient == null) {
             Places.initialize(this, BuildConfig.ApiKey);
             placesClient = Places.createClient(this);
         }
         if (placeRestaurant.getId() != null) {
             PlacesClientHelper.getPhoneFromPlace(placesClient, placeRestaurant.getId()).addOnSuccessListener(response -> {
-                if  (response != null){
+                if (response != null) {
                     Place place = response.getPlace();
                     if (place.getPhoneNumber() != null) {
                         callRestaurant(place.getPhoneNumber());
