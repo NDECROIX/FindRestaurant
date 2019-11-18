@@ -19,10 +19,8 @@ import com.decroix.nicolas.go4lunch.base.BaseActivity;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
 import com.decroix.nicolas.go4lunch.models.Restaurant;
 import com.decroix.nicolas.go4lunch.models.User;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
@@ -38,6 +36,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     /**
      * Start to create the notification
+     *
      * @param context the context in which it is created
      */
     private void startNotification(Context context) {
@@ -82,6 +81,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     /**
      * Create the notification to display
+     *
      * @param restaurant Restaurant where user is register
      * @return The notification to display
      */
@@ -114,6 +114,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     /**
      * Display the notification on the user's screen
+     *
      * @param builder The notification to display
      */
     private void showNotification(NotificationCompat.Builder builder) {
