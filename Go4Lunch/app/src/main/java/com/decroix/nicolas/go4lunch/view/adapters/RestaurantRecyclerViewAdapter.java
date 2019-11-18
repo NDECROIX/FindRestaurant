@@ -31,7 +31,7 @@ import static com.decroix.nicolas.go4lunch.utils.UsefulFunctions.getOpeningHours
 
 public class RestaurantRecyclerViewAdapter extends RecyclerView.Adapter<RestaurantViewHolder> {
 
-    private DetailActivity.StartDetailActivity startDetailActivityCallback;
+    private final DetailActivity.StartDetailActivity startDetailActivityCallback;
 
     private LatLng myLocation;
     private final List<RestaurantItem> restaurants;
