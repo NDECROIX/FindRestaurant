@@ -28,7 +28,7 @@
     <string name="error_unknown_error">Erreur inconnue</string>
     <string name="msg_account_deleted">Compte supprimé</string>
     <string name="no_website">\u0020n\'a pas de site web</string>
-    <string name="notification_joins_you">. Vous rejoint.. :</string>
+    <string name="notification_joins_you">. Vous rejoint: </string>
     <string name="notification_time_update">Mise à jour de l\'heure de notification !</string>
     <string name="restaurant_added_to_the_favorites">\u0020a été ajouté aux favoris</string>
     <string name="restaurant_already_added">Restaurant déjà ajouté</string>
