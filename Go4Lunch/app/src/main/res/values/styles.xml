@@ -16,8 +16,8 @@
     </style>
 
     <!-- Rating bar style -->
-    <style name="RatingBar" parent="Widget.AppCompat.RatingBar.Small">
-        <item name="colorControlNormal">@android:color/white</item>
+    <style name="RatingBarSmall" parent="Widget.AppCompat.RatingBar.Small">
+        <item name="colorControlNormal">@android:color/transparent</item>
         <item name="colorControlActivated">#FFea00</item>
     </style>
 

@@ -49,8 +49,8 @@
                 android:layout_marginTop="25dp"
                 android:numStars="3"
                 android:stepSize="1"
-                android:theme="@style/RatingBar"
-                style="@style/RatingBar"
+                android:theme="@style/RatingBarSmall"
+                style="@style/RatingBarSmall"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/detail_activity_title"
                 app:layout_constraintEnd_toEndOf="parent"/>
