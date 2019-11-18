@@ -60,11 +60,6 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
         toolbarViewHolder = new ToolbarViewHolder(getActivity());
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
     /**
      * Call by the main activity this function update the toolbar for create a searchView
      *
@@ -108,7 +103,7 @@ public abstract class ToolbarAutocomplete extends BaseFragment {
             toolbarViewHolder.searchViewRc.bringToFront();
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 0);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_autocomplete_search_toolbar));
-        } else if (!visibility){
+        } else if (!visibility) {
             toolbarViewHolder.searchEditText.setHint(R.string.search_view_hint_workmates);
             toolbarViewHolder.toolbar.setPadding(0, 0, 0, 10);
             toolbarViewHolder.searchView.setBackground(ContextCompat.getDrawable(getFragmentContext(), R.drawable.background_search_toolbar));
