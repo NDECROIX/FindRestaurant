@@ -41,7 +41,7 @@ public class WorkmatesFragmentTest {
 
     private MainActivity activity;
 
-    private RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("workmateRecyclerView");
+    private final RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("workmateRecyclerView");
 
     /**
      * Setting up the necessary elements for the tests

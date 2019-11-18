@@ -35,7 +35,7 @@ public class ChatFragmentTest {
 
     private MainActivity activity;
 
-    private RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("chatRecyclerView");
+    private final RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("chatRecyclerView");
 
     /**
      * Setting up the necessary elements for the tests

@@ -40,7 +40,7 @@ public class ListViewFragmentTest {
 
     private MainActivity activity;
 
-    private RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("recyclerView");
+    private final RecyclerViewIdlingResource mIdl = new RecyclerViewIdlingResource("recyclerView");
 
     /**
      * Setting up the necessary elements for the tests
