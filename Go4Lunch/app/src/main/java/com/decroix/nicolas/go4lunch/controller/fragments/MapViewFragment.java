@@ -20,6 +20,7 @@ import com.decroix.nicolas.go4lunch.BuildConfig;
 import com.decroix.nicolas.go4lunch.R;
 import com.decroix.nicolas.go4lunch.api.PlacesClientHelper;
 import com.decroix.nicolas.go4lunch.api.RestaurantHelper;
+import com.decroix.nicolas.go4lunch.api.UserHelper;
 import com.decroix.nicolas.go4lunch.base.ToolbarAutocomplete;
 import com.decroix.nicolas.go4lunch.controller.activities.DetailActivity;
 import com.decroix.nicolas.go4lunch.controller.activities.MainActivity;
@@ -154,7 +155,17 @@ public class MapViewFragment extends ToolbarAutocomplete
             model.getMyPlaces(placesClient, false, null).observe(this, places -> {
                 mMap.clear();
                 markers.clear();
-                addMarkerColor(places);
+                if (myUser == null) {
+                    UserHelper.getUser(getCurrentUserID()).addOnSuccessListener(result -> {
+                        User user = result.toObject(User.class);
+                        if (user != null) {
+                            myUser = user;
+                        }
+                        addMarkerColor(places);
+                    }).addOnFailureListener(onFailureListener(getString(R.string.afl_get_user)));
+                } else {
+                    addMarkerColor(places);
+                }
             });
             getCurrentLocation();
         } else {
@@ -191,9 +202,11 @@ public class MapViewFragment extends ToolbarAutocomplete
                     int markerResource = R.drawable.ic_marker_white;
                     if (doc.isSuccessful() && doc.getResult() != null) {
                         Restaurant restaurant = doc.getResult().toObject(Restaurant.class);
-                        if (myUser != null && restaurant != null && !restaurant.getUsers().isEmpty() &&
-                                !restaurant.getPlaceID().equals(myUser.getLunchRestaurantID()))
-                            markerResource = R.drawable.ic_marker_orange;
+                        if (myUser != null && restaurant != null && !restaurant.getUsers().isEmpty()) {
+                            if (!(restaurant.getUsers().size() == 1 && !restaurant.getPlaceID().equals(myUser.getLunchRestaurantID()))) {
+                                markerResource = R.drawable.ic_marker_orange;
+                            }
+                        }
                     }
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(place.getLatLng())
